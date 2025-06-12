@@ -1,0 +1,539 @@
+{% extends "base.html" %}
+
+{% block title %}Transacciones - Finanzas Personales{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-2">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3">
+        <h1 class="h4 mb-2 mb-md-0">
+            <i class="fas fa-exchange-alt"></i>
+            <span class="d-none d-md-inline">Gestión de </span>Transacciones
+        </h1>
+        <button type="button" class="btn btn-primary btn-sm w-100 w-md-auto" data-bs-toggle="modal" data-bs-target="#addTransactionModal">
+            <i class="fas fa-plus"></i>
+            <span class="d-none d-sm-inline">Agregar </span>Transacción
+        </button>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-list"></i>
+                Todas las Transacciones
+            </h5>
+        </div>
+        <div class="card-body">
+            <!-- Filtros de búsqueda -->
+            <div class="row mb-3">
+                <div class="col-12 col-md-4 mb-2">
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" id="searchDescription" class="form-control" placeholder="Buscar por descripción...">
+                    </div>
+                </div>
+                <div class="col-12 col-md-3 mb-2">
+                    <select id="filterCategory" class="form-select">
+                        <option value="">Todas las categorías</option>
+                        <option value="Alimentación">🍽️ Alimentación</option>
+                        <option value="Transporte">🚗 Transporte</option>
+                        <option value="Entretenimiento">🎬 Entretenimiento</option>
+                        <option value="Salud">🏥 Salud</option>
+                        <option value="Educación">📚 Educación</option>
+                        <option value="Servicios">💡 Servicios</option>
+                        <option value="Compras">🛒 Compras</option>
+                        <option value="Viajes">✈️ Viajes</option>
+                        <option value="Hogar">🏠 Hogar</option>
+                        <option value="Ropa">👕 Ropa</option>
+                        <option value="Tecnología">💻 Tecnología</option>
+                        <option value="Deportes">⚽ Deportes</option>
+                        <option value="Regalos">🎁 Regalos</option>
+                        <option value="Inversiones">📈 Inversiones</option>
+                        <option value="Ahorros">💰 Ahorros</option>
+                        <option value="Salario">💼 Salario</option>
+                        <option value="Otros Ingresos">💵 Otros Ingresos</option>
+                        <option value="Otros Gastos">📝 Otros Gastos</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-2 mb-2">
+                    <select id="filterType" class="form-select">
+                        <option value="">Todos los tipos</option>
+                        <option value="ingreso">Ingresos</option>
+                        <option value="gasto">Gastos</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-2 mb-2">
+                    <input type="date" id="filterDateFrom" class="form-control" placeholder="Desde">
+                </div>
+                <div class="col-12 col-md-1 mb-2">
+                    <button type="button" id="clearFilters" class="btn btn-outline-secondary w-100" title="Limpiar filtros">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Contador de resultados -->
+            <div class="mb-2">
+                <small class="text-muted">
+                    <span id="resultsCount">{{ transacciones|length }}</span> transacciones encontradas
+                </small>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-hover" id="transactionsTable">
+                    <thead>
+                        <tr>
+                            <th class="d-none d-md-table-cell">Fecha</th>
+                            <th class="d-md-none">F.</th>
+                            <th class="d-none d-lg-table-cell">Descripción</th>
+                            <th class="d-lg-none">Desc.</th>
+                            <th class="d-none d-md-table-cell">Categoría</th>
+                            <th>Monto</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for t in transacciones %}
+                        <tr>
+                            <td class="d-none d-md-table-cell small">{{ t.Fecha }}</td>
+                            <td class="d-md-none small">{{ t.Fecha | mobile_date }}</td>
+                            <td class="d-none d-lg-table-cell">{{ t.Descripción }}</td>
+                            <td class="d-lg-none small">{{ t.Descripción[:15] }}{% if t.Descripción|length > 15 %}...{% endif %}</td>
+                            <td class="d-none d-md-table-cell">
+                                <span class="badge bg-secondary small">{{ t.Categoría }}</span>
+                            </td>
+                            <td class="{% if t.Monto > 0 %}text-success{% else %}text-danger{% endif %} fw-bold">
+                                {{ t.Monto_Display if t.Monto_Display else "$0" }}
+                            </td>
+                            <td>
+                                <div class="btn-group-mobile d-md-none">
+                                    <button class="btn btn-sm btn-outline-primary edit-btn" 
+                                            data-index="{{ loop.index0 }}"
+                                            data-fecha="{{ t.Fecha }}"
+                                            data-descripcion="{{ t.Descripción }}"
+                                            data-categoria="{{ t.Categoría }}"
+                                            data-monto="{{ t.Monto }}"
+                                            data-bs-toggle="modal" data-bs-target="#editTransactionModal">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger delete-btn" 
+                                            data-index="{{ loop.index0 }}"
+                                            data-descripcion="{{ t.Descripción }}"
+                                            data-bs-toggle="modal" data-bs-target="#deleteTransactionModal">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                                <div class="d-none d-md-block">
+                                    <button class="btn btn-sm btn-outline-primary me-1 edit-btn" 
+                                            data-index="{{ loop.index0 }}"
+                                            data-fecha="{{ t.Fecha }}"
+                                            data-descripcion="{{ t.Descripción }}"
+                                            data-categoria="{{ t.Categoría }}"
+                                            data-monto="{{ t.Monto }}"
+                                            data-bs-toggle="modal" data-bs-target="#editTransactionModal">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger delete-btn" 
+                                            data-index="{{ loop.index0 }}"
+                                            data-descripcion="{{ t.Descripción }}"
+                                            data-bs-toggle="modal" data-bs-target="#deleteTransactionModal">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para agregar transacción -->
+<div class="modal fade" id="addTransactionModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus-circle"></i>
+                    Nueva Transacción
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('add_transaction') }}" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Fecha</label>
+                        <input type="date" name="fecha" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Descripción</label>
+                        <input type="text" name="descripcion" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Categoría</label>
+                        <select name="categoria" class="form-select" required>
+                            <option value="">Seleccione una categoría</option>
+                            <option value="Alimentación">🍽️ Alimentación</option>
+                            <option value="Transporte">🚗 Transporte</option>
+                            <option value="Entretenimiento">🎬 Entretenimiento</option>
+                            <option value="Salud">🏥 Salud</option>
+                            <option value="Educación">📚 Educación</option>
+                            <option value="Servicios">💡 Servicios</option>
+                            <option value="Compras">🛒 Compras</option>
+                            <option value="Viajes">✈️ Viajes</option>
+                            <option value="Hogar">🏠 Hogar</option>
+                            <option value="Ropa">👕 Ropa</option>
+                            <option value="Tecnología">💻 Tecnología</option>
+                            <option value="Deportes">⚽ Deportes</option>
+                            <option value="Regalos">🎁 Regalos</option>
+                            <option value="Inversiones">📈 Inversiones</option>
+                            <option value="Ahorros">💰 Ahorros</option>
+                            <option value="Salario">💼 Salario</option>
+                            <option value="Otros Ingresos">💵 Otros Ingresos</option>
+                            <option value="Otros Gastos">📝 Otros Gastos</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Monto (COP)</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" name="monto" class="form-control" required 
+                                   placeholder="Ingreso (+) o Gasto (-)"
+                                   step="1">
+                        </div>
+                        <small class="form-text text-muted">
+                            Use números positivos para ingresos y negativos para gastos
+                        </small>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para editar transacción -->
+<div class="modal fade" id="editTransactionModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-edit"></i>
+                    Editar Transacción
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('edit_transaction') }}" method="post">
+                <input type="hidden" name="index" id="edit-index">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Fecha</label>
+                        <input type="date" name="fecha" id="edit-fecha" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Descripción</label>
+                        <input type="text" name="descripcion" id="edit-descripcion" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Categoría</label>
+                        <select name="categoria" id="edit-categoria" class="form-select" required>
+                            <option value="">Seleccione una categoría</option>
+                            <option value="Alimentación">🍽️ Alimentación</option>
+                            <option value="Transporte">🚗 Transporte</option>
+                            <option value="Entretenimiento">🎬 Entretenimiento</option>
+                            <option value="Salud">🏥 Salud</option>
+                            <option value="Educación">📚 Educación</option>
+                            <option value="Servicios">💡 Servicios</option>
+                            <option value="Compras">🛒 Compras</option>
+                            <option value="Viajes">✈️ Viajes</option>
+                            <option value="Hogar">🏠 Hogar</option>
+                            <option value="Ropa">👕 Ropa</option>
+                            <option value="Tecnología">💻 Tecnología</option>
+                            <option value="Deportes">⚽ Deportes</option>
+                            <option value="Mascotas">🐕 Mascotas</option>
+                            <option value="Regalos">🎁 Regalos</option>
+                            <option value="Inversiones">📈 Inversiones</option>
+                            <option value="Ahorros">💰 Ahorros</option>
+                            <option value="Salario">💼 Salario</option>
+                            <option value="Freelance">💻 Freelance</option>
+                            <option value="Ventas">🏪 Ventas</option>
+                            <option value="Otros Ingresos">💵 Otros Ingresos</option>
+                            <option value="Otros Gastos">📝 Otros Gastos</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Monto (COP)</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" name="monto" id="edit-monto" class="form-control" required 
+                                   placeholder="Ingreso (+) o Gasto (-)"
+                                   step="1">
+                        </div>
+                        <small class="form-text text-muted">
+                            Use números positivos para ingresos y negativos para gastos
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Actualizar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para eliminar transacción -->
+<div class="modal fade" id="deleteTransactionModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">
+                    <i class="fas fa-trash"></i>
+                    Eliminar Transacción
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('delete_transaction') }}" method="post">
+                <input type="hidden" name="index" id="delete-index">
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        ¿Está seguro que desea eliminar la transacción "<span id="delete-descripcion"></span>"?
+                    </div>
+                    <p class="text-muted">Esta acción no se puede deshacer.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Establecer fecha actual por defecto
+        const fechaInput = document.querySelector('input[name="fecha"]');
+        if (fechaInput) {
+            fechaInput.valueAsDate = new Date();
+        }
+        
+        // Función para cambiar color del monto según el tipo (ingreso/gasto)
+        function setupMontoColorChange(montoInput) {
+            if (montoInput) {
+                montoInput.addEventListener('input', function() {
+                    const value = parseFloat(this.value);
+                    if (value > 0) {
+                        this.style.borderColor = '#28a745';
+                    } else if (value < 0) {
+                        this.style.borderColor = '#dc3545';
+                    } else {
+                        this.style.borderColor = '';
+                    }
+                });
+            }
+        }
+        
+        // Aplicar a ambos inputs de monto
+        setupMontoColorChange(document.querySelector('input[name="monto"]'));
+        setupMontoColorChange(document.querySelector('#edit-monto'));
+        
+        // Función para resaltar categorías según el tipo de transacción
+        function setupCategoriaHighlight(montoInput, categoriaSelect) {
+            if (montoInput && categoriaSelect) {
+                montoInput.addEventListener('input', function() {
+                    const value = parseFloat(this.value);
+                    
+                    // Si es un ingreso (positivo), sugerir categorías de ingresos
+                    if (value > 0) {
+                        const ingresoOptions = ['Salario', 'Freelance', 'Ventas', 'Inversiones', 'Otros Ingresos'];
+                        Array.from(categoriaSelect.options).forEach(option => {
+                            if (ingresoOptions.some(cat => option.text.includes(cat))) {
+                                option.style.backgroundColor = '#d4edda';
+                            } else {
+                                option.style.backgroundColor = '';
+                            }
+                        });
+                    }
+                    // Si es un gasto (negativo), resaltar categorías de gastos
+                    else if (value < 0) {
+                        const gastoOptions = ['Alimentación', 'Transporte', 'Entretenimiento', 'Salud', 'Servicios', 'Compras'];
+                        Array.from(categoriaSelect.options).forEach(option => {
+                            if (gastoOptions.some(cat => option.text.includes(cat))) {
+                                option.style.backgroundColor = '#f8d7da';
+                            } else {
+                                option.style.backgroundColor = '';
+                            }
+                        });
+                    }
+                });
+            }
+        }
+        
+        // Aplicar a ambos pares de inputs
+        setupCategoriaHighlight(
+            document.querySelector('input[name="monto"]'),
+            document.querySelector('select[name="categoria"]')
+        );
+        setupCategoriaHighlight(
+            document.querySelector('#edit-monto'),
+            document.querySelector('#edit-categoria')
+        );
+        
+        // Manejar botones de editar
+        document.querySelectorAll('.edit-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const index = this.dataset.index;
+                const fecha = this.dataset.fecha;
+                const descripcion = this.dataset.descripcion;
+                const categoria = this.dataset.categoria;
+                const monto = this.dataset.monto;
+                
+                // Llenar el formulario de edición
+                document.getElementById('edit-index').value = index;
+                document.getElementById('edit-fecha').value = fecha;
+                document.getElementById('edit-descripcion').value = descripcion;
+                document.getElementById('edit-categoria').value = categoria;
+                document.getElementById('edit-monto').value = monto;
+            });
+        });
+        
+        // Manejar botones de eliminar
+        document.querySelectorAll('.delete-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const index = this.dataset.index;
+                const descripcion = this.dataset.descripcion;
+                
+                // Llenar el formulario de eliminación
+                document.getElementById('delete-index').value = index;
+                document.getElementById('delete-descripcion').textContent = descripcion;
+            });
+        });
+        
+        // SISTEMA DE FILTROS Y BÚSQUEDA
+        const searchDescription = document.getElementById('searchDescription');
+        const filterCategory = document.getElementById('filterCategory');
+        const filterType = document.getElementById('filterType');
+        const filterDateFrom = document.getElementById('filterDateFrom');
+        const clearFilters = document.getElementById('clearFilters');
+        const transactionsTable = document.getElementById('transactionsTable');
+        const resultsCount = document.getElementById('resultsCount');
+        
+        // Mejorar detección de tipo de transacción
+        function improveTransactionTypeDetection() {
+            const rows = transactionsTable.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const montoCell = row.querySelector('td:nth-last-child(2)'); // Penúltima columna
+                if (montoCell) {
+                    // Agregar atributo data para facilitar filtrado
+                    const isIngreso = montoCell.classList.contains('text-success');
+                    row.setAttribute('data-type', isIngreso ? 'ingreso' : 'gasto');
+                }
+            });
+        }
+        
+        // Función de filtrado
+        function filterTable() {
+            const searchTerm = searchDescription.value.toLowerCase();
+            const categoryFilter = filterCategory.value;
+            const typeFilter = filterType.value;
+            const dateFromFilter = filterDateFrom.value;
+            
+            const rows = transactionsTable.querySelectorAll('tbody tr');
+            let visibleCount = 0;
+            
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length === 0) return;
+                
+                // Extraer datos de la fila
+                const fecha = cells[0].textContent.trim() || cells[1].textContent.trim();
+                const descripcion = cells[2].textContent.trim() || cells[3].textContent.trim();
+                const categoria = cells[4] ? cells[4].textContent.trim() : '';
+                const transactionType = row.getAttribute('data-type') || '';
+                
+                // Aplicar filtros
+                let showRow = true;
+                
+                // Filtro por descripción
+                if (searchTerm && !descripcion.toLowerCase().includes(searchTerm)) {
+                    showRow = false;
+                }
+                
+                // Filtro por categoría
+                if (categoryFilter && !categoria.includes(categoryFilter)) {
+                    showRow = false;
+                }
+                
+                // Filtro por tipo (ingreso/gasto)
+                if (typeFilter && typeFilter !== transactionType) {
+                    showRow = false;
+                }
+                
+                // Filtro por fecha (desde)
+                if (dateFromFilter) {
+                    try {
+                        // Manejar diferentes formatos de fecha
+                        let rowDate;
+                        if (fecha.includes('/')) {
+                            const parts = fecha.split('/');
+                            if (parts.length === 3) {
+                                // Asumir DD/MM/YYYY
+                                rowDate = new Date(parts[2], parts[1] - 1, parts[0]);
+                            }
+                        } else {
+                            rowDate = new Date(fecha);
+                        }
+                        
+                        const filterDate = new Date(dateFromFilter);
+                        if (rowDate < filterDate) {
+                            showRow = false;
+                        }
+                    } catch (e) {
+                        console.warn('Error parsing date:', fecha);
+                    }
+                }
+                
+                // Mostrar/ocultar fila
+                row.style.display = showRow ? '' : 'none';
+                if (showRow) visibleCount++;
+            });
+            
+            resultsCount.textContent = visibleCount;
+        }
+        
+        // Event listeners para filtros
+        if (searchDescription) searchDescription.addEventListener('input', filterTable);
+        if (filterCategory) filterCategory.addEventListener('change', filterTable);
+        if (filterType) filterType.addEventListener('change', filterTable);
+        if (filterDateFrom) filterDateFrom.addEventListener('change', filterTable);
+        
+        // Limpiar filtros
+        if (clearFilters) {
+            clearFilters.addEventListener('click', function() {
+                if (searchDescription) searchDescription.value = '';
+                if (filterCategory) filterCategory.value = '';
+                if (filterType) filterType.value = '';
+                if (filterDateFrom) filterDateFrom.value = '';
+                filterTable();
+            });
+        }
+        
+        // Ejecutar mejora de detección al cargar
+        if (transactionsTable) {
+            improveTransactionTypeDetection();
+        }
+    });
+</script>
+{% endblock %} 

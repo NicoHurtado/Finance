@@ -1,0 +1,622 @@
+{% extends "base.html" %}
+
+{% block title %}Tarjetas de Crédito - Finanzas Personales{% endblock %}
+
+{% block extra_css %}
+<style>
+    .border-left-primary {
+        border-left: 4px solid #007bff !important;
+    }
+    .bg-warning-light {
+        background-color: #fff3cd !important;
+    }
+    .text-purple {
+        color: #6f42c1 !important;
+    }
+    .card-tarjeta {
+        transition: transform 0.2s ease-in-out;
+    }
+    .card-tarjeta:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-2">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3">
+        <h1 class="h4 mb-2 mb-md-0">
+            <i class="fas fa-credit-card"></i>
+            <span class="d-none d-md-inline">Tarjetas de </span>Crédito
+        </h1>
+        <button type="button" class="btn btn-primary btn-sm w-100 w-md-auto" data-bs-toggle="modal" data-bs-target="#addCreditModal">
+            <i class="fas fa-plus"></i>
+            <span class="d-none d-sm-inline">Agregar </span>Gasto
+        </button>
+    </div>
+
+    <!-- Resumen por Tarjetas -->
+    {% if resumen_tarjetas %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-credit-card me-2"></i>
+                        Resumen por Tarjeta
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for tarjeta, datos in resumen_tarjetas.items() %}
+                        <div class="col-12 col-md-6 col-lg-4 mb-3">
+                            <div class="card border-left-primary h-100 card-tarjeta">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-3">
+                                            {% if 'Bancolombia Visa' in tarjeta %}
+                                                <i class="fas fa-credit-card fa-2x text-primary"></i>
+                                            {% elif 'Bancolombia MC' in tarjeta %}
+                                                <i class="fas fa-credit-card fa-2x text-warning"></i>
+                                            {% elif 'Bancolombia AE' in tarjeta %}
+                                                <i class="fas fa-credit-card fa-2x text-success"></i>
+                                            {% elif 'Nu' in tarjeta %}
+                                                <i class="fas fa-credit-card fa-2x text-purple"></i>
+                                            {% elif 'Colpatria' in tarjeta %}
+                                                <i class="fas fa-credit-card fa-2x text-danger"></i>
+                                            {% elif 'Falabella' in tarjeta %}
+                                                <i class="fas fa-credit-card fa-2x text-info"></i>
+                                            {% else %}
+                                                <i class="fas fa-credit-card fa-2x text-secondary"></i>
+                                            {% endif %}
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="card-title mb-1">{{ tarjeta }}</h6>
+                                            <small class="text-muted">{{ datos.transacciones_count }} transacciones</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <hr class="my-3">
+                                    
+                                    <div class="row text-center">
+                                        <div class="col-12 mb-2">
+                                            <div class="border rounded p-2 bg-light">
+                                                <small class="text-muted d-block">Total Gastado</small>
+                                                <strong class="text-dark">{{ datos.total_display }}</strong>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="border rounded p-2 {% if datos.pendiente > 0 %}bg-warning-light{% else %}bg-light{% endif %}">
+                                                <small class="text-muted d-block">Pendiente</small>
+                                                <strong class="{% if datos.pendiente > 0 %}text-warning{% else %}text-muted{% endif %}">
+                                                    {{ datos.pendiente_display }}
+                                                </strong>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="border rounded p-2 bg-light">
+                                                <small class="text-muted d-block">Pagado</small>
+                                                <strong class="text-success">{{ datos.pagado_display }}</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    {% if datos.pendiente > 0 %}
+                                    <div class="mt-3">
+                                        <div class="alert alert-warning py-2 mb-0">
+                                            <i class="fas fa-exclamation-triangle me-1"></i>
+                                            <small>Debes {{ datos.pendiente_display }}</small>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="card shadow">
+        <div class="card-header">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+                <h5 class="mb-2 mb-md-0">
+                    <i class="fas fa-list"></i>
+                    <span class="d-none d-md-inline">Gastos con </span>Tarjeta
+                    <small class="text-muted ms-2" id="contador-transacciones">
+                        {{ transacciones|length }}
+                    </small>
+                </h5>
+                {% if resumen_tarjetas %}
+                <div class="btn-group flex-wrap" role="group">
+                    <button type="button" class="btn btn-sm btn-outline-primary active mb-1" onclick="filtrarPorTarjeta('todas')">
+                        Todas
+                    </button>
+                    {% for tarjeta in resumen_tarjetas.keys() %}
+                    <button type="button" class="btn btn-sm btn-outline-primary mb-1" onclick="filtrarPorTarjeta('{{ tarjeta }}')">
+                        <span class="d-none d-sm-inline">{{ tarjeta }}</span>
+                        <span class="d-sm-none">{{ tarjeta[:8] }}{% if tarjeta|length > 8 %}...{% endif %}</span>
+                    </button>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card-body">
+            <!-- Filtros de búsqueda -->
+            <div class="row mb-3">
+                <div class="col-12 col-md-4 mb-2">
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" id="searchCreditDescription" class="form-control" placeholder="Buscar por descripción...">
+                    </div>
+                </div>
+                <div class="col-12 col-md-3 mb-2">
+                    <select id="filterCreditCard" class="form-select">
+                        <option value="">Todas las tarjetas</option>
+                        {% if resumen_tarjetas %}
+                            {% for tarjeta in resumen_tarjetas.keys() %}
+                            <option value="{{ tarjeta }}">{{ tarjeta }}</option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                </div>
+                <div class="col-12 col-md-2 mb-2">
+                    <select id="filterCreditStatus" class="form-select">
+                        <option value="">Todos los estados</option>
+                        <option value="Pendiente">⏳ Pendiente</option>
+                        <option value="Pagado">✅ Pagado</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-2 mb-2">
+                    <input type="date" id="filterCreditDateFrom" class="form-control" placeholder="Desde">
+                </div>
+                <div class="col-12 col-md-1 mb-2">
+                    <button type="button" id="clearCreditFilters" class="btn btn-outline-secondary w-100" title="Limpiar filtros">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Contador de resultados -->
+            <div class="mb-2">
+                <small class="text-muted">
+                    <span id="creditResultsCount">{{ transacciones|length }}</span> gastos encontrados
+                </small>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-hover" id="creditTransactionsTable">
+                    <thead>
+                        <tr>
+                            <th class="d-none d-md-table-cell">Fecha</th>
+                            <th class="d-md-none">F.</th>
+                            <th class="d-none d-lg-table-cell">Descripción</th>
+                            <th class="d-lg-none">Desc.</th>
+                            <th class="d-none d-md-table-cell">Tarjeta</th>
+                            <th>Monto</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-transacciones">
+                        {% for t in transacciones %}
+                        <tr data-tarjeta="{{ t.Tarjeta }}" class="fila-transaccion">
+                            <td class="d-none d-md-table-cell small">{{ t.Fecha }}</td>
+                            <td class="d-md-none small">{{ t.Fecha | mobile_date }}</td>
+                            <td class="d-none d-lg-table-cell">{{ t.Descripción }}</td>
+                            <td class="d-lg-none small">{{ t.Descripción[:12] }}{% if t.Descripción|length > 12 %}...{% endif %}</td>
+                            <td class="d-none d-md-table-cell">
+                                <span class="badge bg-info small">{{ t.Tarjeta }}</span>
+                            </td>
+                            <td class="text-danger fw-bold">
+                                {{ t.Monto_Display if t.Monto_Display else "$0" }}
+                            </td>
+                            <td>
+                                <span class="badge {% if t.Estado == 'Pagado' %}bg-success{% else %}bg-warning{% endif %} small">
+                                    <span class="d-none d-sm-inline">{{ t.Estado }}</span>
+                                    <span class="d-sm-none">{{ t.Estado[0] }}</span>
+                                </span>
+                            </td>
+                            <td>
+                                <div class="btn-group-mobile d-md-none">
+                                    <button class="btn btn-sm btn-outline-primary edit-credit-btn" 
+                                            data-index="{{ loop.index0 }}"
+                                            data-fecha="{{ t.Fecha }}"
+                                            data-descripcion="{{ t.Descripción }}"
+                                            data-monto="{{ t.Monto }}"
+                                            data-tarjeta="{{ t.Tarjeta }}"
+                                            data-estado="{{ t.Estado }}"
+                                            data-bs-toggle="modal" data-bs-target="#editCreditModal">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger delete-credit-btn" 
+                                            data-index="{{ loop.index0 }}"
+                                            data-descripcion="{{ t.Descripción }}"
+                                            data-bs-toggle="modal" data-bs-target="#deleteCreditModal">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                                <div class="d-none d-md-block">
+                                    <button class="btn btn-sm btn-outline-primary me-1 edit-credit-btn" 
+                                            data-index="{{ loop.index0 }}"
+                                            data-fecha="{{ t.Fecha }}"
+                                            data-descripcion="{{ t.Descripción }}"
+                                            data-monto="{{ t.Monto }}"
+                                            data-tarjeta="{{ t.Tarjeta }}"
+                                            data-estado="{{ t.Estado }}"
+                                            data-bs-toggle="modal" data-bs-target="#editCreditModal">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger delete-credit-btn" 
+                                            data-index="{{ loop.index0 }}"
+                                            data-descripcion="{{ t.Descripción }}"
+                                            data-bs-toggle="modal" data-bs-target="#deleteCreditModal">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para agregar gasto de tarjeta -->
+<div class="modal fade" id="addCreditModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus-circle"></i>
+                    Nuevo Gasto de Tarjeta
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('add_credit_transaction') }}" method="post">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Fecha</label>
+                        <input type="date" name="fecha" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Descripción</label>
+                        <input type="text" name="descripcion" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Monto (COP)</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" name="monto" class="form-control" required 
+                                   placeholder="Ingrese el monto del gasto"
+                                   step="1">
+                        </div>
+                        <small class="form-text text-muted">
+                            Ingrese el monto sin signo (se registrará como gasto)
+                        </small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tarjeta</label>
+                        <select name="tarjeta" class="form-select" required>
+                            <option value="">Seleccione una tarjeta</option>
+                            <option value="Bancolombia Visa">Bancolombia Visa</option>
+                            <option value="Bancolombia MC">Bancolombia MC</option>
+                            <option value="Bancolombia AE">Bancolombia AE</option>
+                            <option value="Nu">Nu</option>
+                            <option value="Colpatria">Colpatria</option>
+                            <option value="Falabella">Falabella</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Estado</label>
+                        <select name="estado" class="form-select" required>
+                            <option value="Pendiente">Pendiente</option>
+                            <option value="Pagado">Pagado</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para editar gasto de tarjeta -->
+<div class="modal fade" id="editCreditModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-edit"></i>
+                    Editar Gasto de Tarjeta
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('edit_credit_transaction') }}" method="post">
+                <input type="hidden" name="index" id="edit-credit-index">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Fecha</label>
+                        <input type="date" name="fecha" id="edit-credit-fecha" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Descripción</label>
+                        <input type="text" name="descripcion" id="edit-credit-descripcion" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Monto (COP)</label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input type="number" name="monto" id="edit-credit-monto" class="form-control" required 
+                                   placeholder="Ingrese el monto del gasto"
+                                   step="1">
+                        </div>
+                        <small class="form-text text-muted">
+                            Ingrese el monto sin signo (se registrará como gasto)
+                        </small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tarjeta</label>
+                        <select name="tarjeta" id="edit-credit-tarjeta" class="form-select" required>
+                            <option value="">Seleccione una tarjeta</option>
+                            <option value="Bancolombia Visa">Bancolombia Visa</option>
+                            <option value="Bancolombia MC">Bancolombia MC</option>
+                            <option value="Bancolombia AE">Bancolombia AE</option>
+                            <option value="Nu">Nu</option>
+                            <option value="Colpatria">Colpatria</option>
+                            <option value="Falabella">Falabella</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Estado</label>
+                        <select name="estado" id="edit-credit-estado" class="form-select" required>
+                            <option value="Pendiente">Pendiente</option>
+                            <option value="Pagado">Pagado</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Actualizar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para eliminar gasto de tarjeta -->
+<div class="modal fade" id="deleteCreditModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">
+                    <i class="fas fa-trash"></i>
+                    Eliminar Gasto de Tarjeta
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('delete_credit_transaction') }}" method="post">
+                <input type="hidden" name="index" id="delete-credit-index">
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        ¿Está seguro que desea eliminar el gasto "<span id="delete-credit-descripcion"></span>"?
+                    </div>
+                    <p class="text-muted">Esta acción no se puede deshacer.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Establecer fecha actual por defecto
+        const fechaInput = document.querySelector('input[name="fecha"]');
+        if (fechaInput) {
+            fechaInput.valueAsDate = new Date();
+        }
+        
+        // Función para validar que el monto sea positivo
+        function setupMontoValidation(montoInput) {
+            if (montoInput) {
+                montoInput.addEventListener('input', function() {
+                    const value = parseFloat(this.value);
+                    if (value < 0) {
+                        this.value = Math.abs(value);
+                    }
+                    if (value > 0) {
+                        this.style.borderColor = '#28a745';
+                    } else {
+                        this.style.borderColor = '';
+                    }
+                });
+            }
+        }
+        
+        // Aplicar validación a ambos inputs de monto
+        setupMontoValidation(document.querySelector('input[name="monto"]'));
+        setupMontoValidation(document.querySelector('#edit-credit-monto'));
+        
+        // Manejar botones de editar tarjeta
+        document.querySelectorAll('.edit-credit-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const index = this.dataset.index;
+                const fecha = this.dataset.fecha;
+                const descripcion = this.dataset.descripcion;
+                const monto = Math.abs(parseFloat(this.dataset.monto)); // Asegurar que sea positivo
+                const tarjeta = this.dataset.tarjeta;
+                const estado = this.dataset.estado;
+                
+                // Llenar el formulario de edición
+                document.getElementById('edit-credit-index').value = index;
+                document.getElementById('edit-credit-fecha').value = fecha;
+                document.getElementById('edit-credit-descripcion').value = descripcion;
+                document.getElementById('edit-credit-monto').value = monto;
+                document.getElementById('edit-credit-tarjeta').value = tarjeta;
+                document.getElementById('edit-credit-estado').value = estado;
+            });
+        });
+        
+        // Manejar botones de eliminar tarjeta
+        document.querySelectorAll('.delete-credit-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const index = this.dataset.index;
+                const descripcion = this.dataset.descripcion;
+                
+                // Llenar el formulario de eliminación
+                document.getElementById('delete-credit-index').value = index;
+                document.getElementById('delete-credit-descripcion').textContent = descripcion;
+            });
+        });
+        
+        // Función para filtrar transacciones por tarjeta
+        window.filtrarPorTarjeta = function(tarjeta) {
+            const filas = document.querySelectorAll('.fila-transaccion');
+            const botones = document.querySelectorAll('.btn-group .btn');
+            
+            // Actualizar botones activos
+            botones.forEach(btn => {
+                btn.classList.remove('active');
+                if ((tarjeta === 'todas' && btn.textContent.trim() === 'Todas') ||
+                    (tarjeta !== 'todas' && btn.textContent.trim() === tarjeta)) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // Filtrar filas
+            filas.forEach(fila => {
+                if (tarjeta === 'todas' || fila.dataset.tarjeta === tarjeta) {
+                    fila.style.display = '';
+                } else {
+                    fila.style.display = 'none';
+                }
+            });
+            
+            // Actualizar contador de transacciones visibles
+            const filasVisibles = document.querySelectorAll('.fila-transaccion[style=""], .fila-transaccion:not([style])');
+            const contador = document.getElementById('contador-transacciones');
+            if (contador) {
+                contador.textContent = `${filasVisibles.length} transacciones`;
+            }
+        };
+        
+        // SISTEMA DE FILTROS Y BÚSQUEDA PARA TARJETAS
+        const searchCreditDescription = document.getElementById('searchCreditDescription');
+        const filterCreditCard = document.getElementById('filterCreditCard');
+        const filterCreditStatus = document.getElementById('filterCreditStatus');
+        const filterCreditDateFrom = document.getElementById('filterCreditDateFrom');
+        const clearCreditFilters = document.getElementById('clearCreditFilters');
+        const creditTransactionsTable = document.getElementById('creditTransactionsTable');
+        const creditResultsCount = document.getElementById('creditResultsCount');
+        
+        // Función de filtrado para tarjetas
+        function filterCreditTable() {
+            const searchTerm = searchCreditDescription.value.toLowerCase();
+            const cardFilter = filterCreditCard.value;
+            const statusFilter = filterCreditStatus.value;
+            const dateFromFilter = filterCreditDateFrom.value;
+            
+            const rows = creditTransactionsTable.querySelectorAll('tbody tr');
+            let visibleCount = 0;
+            
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length === 0) return;
+                
+                // Extraer datos de la fila
+                const fecha = cells[0].textContent.trim() || cells[1].textContent.trim();
+                const descripcion = cells[2].textContent.trim() || cells[3].textContent.trim();
+                const tarjeta = cells[4] ? cells[4].textContent.trim() : row.getAttribute('data-tarjeta') || '';
+                const estado = cells[6].textContent.trim();
+                
+                // Aplicar filtros
+                let showRow = true;
+                
+                // Filtro por descripción
+                if (searchTerm && !descripcion.toLowerCase().includes(searchTerm)) {
+                    showRow = false;
+                }
+                
+                // Filtro por tarjeta
+                if (cardFilter && !tarjeta.includes(cardFilter)) {
+                    showRow = false;
+                }
+                
+                // Filtro por estado
+                if (statusFilter && !estado.includes(statusFilter)) {
+                    showRow = false;
+                }
+                
+                // Filtro por fecha (desde)
+                if (dateFromFilter) {
+                    try {
+                        // Manejar diferentes formatos de fecha
+                        let rowDate;
+                        if (fecha.includes('/')) {
+                            const parts = fecha.split('/');
+                            if (parts.length === 3) {
+                                // Asumir DD/MM/YYYY
+                                rowDate = new Date(parts[2], parts[1] - 1, parts[0]);
+                            }
+                        } else {
+                            rowDate = new Date(fecha);
+                        }
+                        
+                        const filterDate = new Date(dateFromFilter);
+                        if (rowDate < filterDate) {
+                            showRow = false;
+                        }
+                    } catch (e) {
+                        console.warn('Error parsing date:', fecha);
+                    }
+                }
+                
+                // Mostrar/ocultar fila
+                row.style.display = showRow ? '' : 'none';
+                if (showRow) visibleCount++;
+            });
+            
+            creditResultsCount.textContent = visibleCount;
+        }
+        
+        // Event listeners para filtros de tarjetas
+        if (searchCreditDescription) searchCreditDescription.addEventListener('input', filterCreditTable);
+        if (filterCreditCard) filterCreditCard.addEventListener('change', filterCreditTable);
+        if (filterCreditStatus) filterCreditStatus.addEventListener('change', filterCreditTable);
+        if (filterCreditDateFrom) filterCreditDateFrom.addEventListener('change', filterCreditTable);
+        
+        // Limpiar filtros de tarjetas
+        if (clearCreditFilters) {
+            clearCreditFilters.addEventListener('click', function() {
+                if (searchCreditDescription) searchCreditDescription.value = '';
+                if (filterCreditCard) filterCreditCard.value = '';
+                if (filterCreditStatus) filterCreditStatus.value = '';
+                if (filterCreditDateFrom) filterCreditDateFrom.value = '';
+                filterCreditTable();
+                
+                // También resetear filtros de botones de tarjeta
+                filtrarPorTarjeta('todas');
+            });
+        }
+    });
+</script>
+{% endblock %} 

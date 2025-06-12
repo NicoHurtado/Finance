@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Finanzas Personales{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-tachometer-alt me-2 text-primary"></i>
+        Dashboard
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-calendar me-1"></i>
+                Este mes
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Tarjetas de resumen -->
+<div class="row mb-4">
+    <div class="col-12 col-md-4 mb-3 mb-md-0">
+        <div class="card shadow h-100 stats-card">
+            <div class="card-body text-center">
+                <i class="fas fa-wallet fa-2x text-primary mb-2 d-md-none"></i>
+                <h6 class="card-subtitle mb-2 text-muted">Balance Total</h6>
+                <h3 class="card-title {% if summary.balance_total >= 0 %}text-success{% else %}text-danger{% endif %} mb-0">
+                    {{ summary.balance_total_display }}
+                </h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-4 mb-3 mb-md-0">
+        <div class="card shadow h-100 stats-card success">
+            <div class="card-body text-center">
+                <i class="fas fa-arrow-up fa-2x text-success mb-2 d-md-none"></i>
+                <h6 class="card-subtitle mb-2 text-muted">Ingresos</h6>
+                <h3 class="card-title text-success mb-0">
+                    {{ summary.ingresos_display }}
+                </h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-4">
+        <div class="card shadow h-100 stats-card danger">
+            <div class="card-body text-center">
+                <i class="fas fa-arrow-down fa-2x text-danger mb-2 d-md-none"></i>
+                <h6 class="card-subtitle mb-2 text-muted">Egresos</h6>
+                <h3 class="card-title text-danger mb-0">
+                    {{ summary.gastos_display }}
+                </h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Transacciones Recientes -->
+    <div class="col-md-12 mb-4">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-history me-2 text-primary"></i>
+                    Transacciones Recientes
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if summary.transacciones_recientes %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th class="d-none d-sm-table-cell">Fecha</th>
+                                <th class="d-sm-none">F.</th>
+                                <th class="d-none d-md-table-cell">Descripción</th>
+                                <th class="d-md-none">Desc.</th>
+                                <th>Monto</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for t in summary.transacciones_recientes %}
+                            <tr>
+                                <td class="small d-none d-sm-table-cell">{{ t.Fecha }}</td>
+                                <td class="small d-sm-none">{{ t.Fecha | mobile_date }}</td>
+                                <td class="d-none d-md-table-cell">{{ t.Descripción }}</td>
+                                <td class="d-md-none small">{{ t.Descripción[:20] }}{% if t.Descripción|length > 20 %}...{% endif %}</td>
+                                <td class="{% if t.Monto > 0 %}text-success{% else %}text-danger{% endif %} fw-bold">
+                                    {{ t.Monto_Display }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">No hay transacciones recientes</p>
+                    <a href="{{ url_for('transacciones') }}" class="btn btn-primary btn-custom">
+                        <i class="fas fa-plus me-1"></i>
+                        Agregar Primera Transacción
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Acciones Rápidas -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-bolt me-2 text-primary"></i>
+                    Acciones Rápidas
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('transacciones') }}" class="btn btn-success w-100 btn-custom">
+                            <i class="fas fa-plus-circle me-2"></i>
+                            Nueva Transacción
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('tarjetas') }}" class="btn btn-warning w-100 btn-custom">
+                            <i class="fas fa-credit-card me-2"></i>
+                            Gasto de Tarjeta
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{{ url_for('graficas') }}" class="btn btn-info w-100 btn-custom">
+                            <i class="fas fa-chart-line me-2"></i>
+                            Ver Gráficas
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Gráfico de gastos por categoría
+    {% if summary.gastos_por_categoria %}
+    const ctx = document.getElementById('categoryChart').getContext('2d');
+    const categoryChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ summary.gastos_por_categoria.keys() | list | tojson }},
+            datasets: [{
+                data: {{ summary.gastos_por_categoria.values() | list | tojson }},
+                backgroundColor: [
+                    '#FF6384',
+                    '#36A2EB',
+                    '#FFCE56',
+                    '#4BC0C0',
+                    '#9966FF',
+                    '#FF9F40'
+                ],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        font: {
+                            size: 11
+                        }
+                    }
+                }
+            }
+        }
+    });
+    {% endif %}
+</script>
+{% endblock %} 

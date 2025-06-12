@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block title %}Gráficas y Estadísticas - Finanzas Personales{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center pt-2 pb-2 mb-3">
+        <h1 class="h4 mb-2 mb-md-0">
+            <i class="fas fa-chart-line me-2 text-primary"></i>
+            <span class="d-none d-md-inline">Gráficas y </span>Estadísticas
+        </h1>
+        <div class="btn-toolbar">
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="location.reload()">
+                <i class="fas fa-sync me-1"></i>
+                <span class="d-none d-sm-inline">Actualizar </span>Datos
+            </button>
+        </div>
+    </div>
+
+    
+
+    <!-- Análisis por Categorías -->
+    {% if analysis.get('patrones', {}).get('top_categorias_gasto') %}
+    <div class="row mb-4">
+        <div class="col-12 col-lg-6">
+            <div class="card">
+                <div class="card-header text-white" style="background: #000000; border-bottom: 1px solid #e0e0e0;">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>
+                        Top 5 Categorías de Gastos
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div id="categoryChart" style="height: 300px;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-lg-6">
+            <div class="card">
+                <div class="card-header text-white" style="background: #000000; border-bottom: 1px solid #e0e0e0;">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-list-ol me-2"></i>
+                        Ranking de Gastos
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        {% for i in range(analysis.get('patrones', {}).get('top_categorias_gasto', {}).get('labels', [])|length) %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
+                            <div>
+                                <span class="badge bg-primary rounded-pill me-2">{{ i + 1 }}</span>
+                                {{ analysis.get('patrones', {}).get('top_categorias_gasto', {}).get('labels', [])[i] }}
+                            </div>
+                            <strong class="text-danger">${{ analysis.get('patrones', {}).get('top_categorias_gasto', {}).get('values', [])[i] | format_number }}</strong>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Gráfica de Líneas Suavizada - Últimos 2 Meses -->
+    {% if analysis.get('grafica_lineas_2meses', {}).get('fechas') %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header text-white" style="background: #000000; border-bottom: 1px solid #e0e0e0;">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-chart-line me-2"></i>
+                        Ingresos vs Gastos - Últimos 2 Meses ({{ analysis.get('grafica_lineas_2meses', {}).get('total_dias', 0) }} días)
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div id="smoothLineChart" style="height: 400px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script>
+    // Configuración común para gráficas
+    const commonLayout = {
+        font: { family: 'Arial, sans-serif', size: 12 },
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        margin: { t: 30, r: 30, b: 50, l: 60 }
+    };
+
+    // Gráfica de Forecasting
+    {% if analysis.get('forecasting') %}
+    const forecastData = [
+        {
+            x: {{ analysis.get('graficas', {}).get('gastos_mensuales', {}).get('labels', [])|tojson }},
+            y: {{ analysis.get('graficas', {}).get('gastos_mensuales', {}).get('values', [])|tojson }},
+            type: 'scatter',
+            mode: 'lines+markers',
+            name: 'Gastos Históricos',
+            line: { color: '#FF3547', width: 3 },
+            marker: { size: 8 }
+        },
+        {
+            x: {{ analysis.get('forecasting', {}).get('fechas_futuras', [])|tojson }},
+            y: {{ analysis.get('forecasting', {}).get('gastos_predichos', [])|tojson }},
+            type: 'scatter',
+            mode: 'lines+markers',
+            name: 'Predicción',
+            line: { color: '#00ED64', width: 3, dash: 'dash' },
+            marker: { size: 8, symbol: 'diamond' }
+        }
+    ];
+
+    const forecastLayout = {
+        ...commonLayout,
+        title: '',
+        xaxis: { title: 'Fecha', gridcolor: '#e0e0e0' },
+        yaxis: { title: 'Monto (COP)', gridcolor: '#e0e0e0', tickformat: '$,.0f' },
+        showlegend: true,
+        legend: { x: 0, y: 1 }
+    };
+
+    Plotly.newPlot('forecastChart', forecastData, forecastLayout, {responsive: true});
+    {% endif %}
+
+    // Gráfica de Categorías
+    {% if analysis.get('patrones', {}).get('top_categorias_gasto') %}
+    const categoryData = [{
+        labels: {{ analysis.get('patrones', {}).get('top_categorias_gasto', {}).get('labels', [])|tojson }},
+        values: {{ analysis.get('patrones', {}).get('top_categorias_gasto', {}).get('values', [])|tojson }},
+        type: 'pie',
+        hole: 0.4,
+        marker: {
+            colors: ['#FF3547', '#FFB000', '#00ED64', '#13AA52', '#FFD700']
+        },
+        textinfo: 'label+percent',
+        textposition: 'outside'
+    }];
+
+    const categoryLayout = {
+        ...commonLayout,
+        title: '',
+        showlegend: false
+    };
+
+    Plotly.newPlot('categoryChart', categoryData, categoryLayout, {responsive: true});
+    {% endif %}
+
+    // Gráfica de Líneas Suavizada - Últimos 2 Meses
+    {% if analysis.get('grafica_lineas_2meses', {}).get('fechas') %}
+    const smoothLineData = [
+        {
+            x: {{ analysis.get('grafica_lineas_2meses', {}).get('fechas', [])|tojson }},
+            y: {{ analysis.get('grafica_lineas_2meses', {}).get('ingresos', [])|tojson }},
+            type: 'scatter',
+            mode: 'lines+markers',
+            name: 'Ingresos',
+            line: { 
+                color: '#00ED64', 
+                width: 3,
+                shape: 'spline',
+                smoothing: 1.3
+            },
+            marker: { 
+                size: 6,
+                color: '#00ED64',
+                symbol: 'circle'
+            },
+            fill: 'tonexty',
+            fillcolor: 'rgba(0, 237, 100, 0.1)'
+        },
+        {
+            x: {{ analysis.get('grafica_lineas_2meses', {}).get('fechas', [])|tojson }},
+            y: {{ analysis.get('grafica_lineas_2meses', {}).get('gastos', [])|tojson }},
+            type: 'scatter',
+            mode: 'lines+markers',
+            name: 'Gastos',
+            line: { 
+                color: '#FF3547', 
+                width: 3,
+                shape: 'spline',
+                smoothing: 1.3
+            },
+            marker: { 
+                size: 6,
+                color: '#FF3547',
+                symbol: 'square'
+            },
+            fill: 'tozeroy',
+            fillcolor: 'rgba(255, 53, 71, 0.1)'
+        }
+    ];
+
+    const smoothLineLayout = {
+        ...commonLayout,
+        title: '',
+        xaxis: { 
+            title: 'Fecha',
+            gridcolor: '#e0e0e0',
+            tickangle: -45,
+            tickfont: { size: 10 }
+        },
+        yaxis: { 
+            title: 'Monto (COP)', 
+            gridcolor: '#e0e0e0', 
+            tickformat: '$,.0f' 
+        },
+        showlegend: true,
+        legend: { 
+            x: 0, 
+            y: 1,
+            bgcolor: 'rgba(255,255,255,0.8)',
+            bordercolor: '#e0e0e0',
+            borderwidth: 1
+        },
+        hovermode: 'x unified',
+        margin: { t: 30, r: 30, b: 100, l: 80 }
+    };
+
+    Plotly.newPlot('smoothLineChart', smoothLineData, smoothLineLayout, {responsive: true});
+    {% endif %}
+
+    // Hacer las gráficas responsive
+    window.addEventListener('resize', function() {
+        {% if analysis.get('forecasting') %}
+        Plotly.Plots.resize('forecastChart');
+        {% endif %}
+        {% if analysis.get('patrones', {}).get('top_categorias_gasto') %}
+        Plotly.Plots.resize('categoryChart');
+        {% endif %}
+        {% if analysis.get('grafica_lineas_2meses', {}).get('fechas') %}
+        Plotly.Plots.resize('smoothLineChart');
+        {% endif %}
+    });
+</script>
+{% endblock %} 
