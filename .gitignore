@@ -163,4 +163,15 @@ temp/
 # Archivos específicos del proyecto
 fix_env_example.txt
 test_*.py
-debug_*.py 
+debug_*.py
+
+# Archivos de despliegue
+.render/
+render-build.log
+gunicorn.pid
+gunicorn.sock
+
+# Variables de entorno locales
+.env.local
+.env.development
+.env.production 
