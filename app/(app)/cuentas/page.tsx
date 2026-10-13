@@ -1,7 +1,7 @@
 "use client"
 import { useMemo } from "react"
 import Link from "next/link"
-import { Plus, Repeat } from "lucide-react"
+import { Plus, Repeat, Smartphone } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAccountsStore } from "@/lib/store/accounts"
 import { useTransactionsStore } from "@/lib/store/transactions"
@@ -50,6 +50,11 @@ export default function CuentasPage() {
     <div className="p-4 md:p-8">
       <div className="space-y-6">
         <PageHeader eyebrow="Portafolio" title="Cuentas">
+          <Link href="/cuentas/apple-pay">
+            <Button variant="outline" size="sm" className="gap-1">
+              <Smartphone className="size-4" /> Apple Pay
+            </Button>
+          </Link>
           <Link href="/cuentas/suscripciones">
             <Button variant="outline" size="sm" className="gap-1">
               <Repeat className="size-4" /> Suscripciones

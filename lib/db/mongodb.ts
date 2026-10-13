@@ -67,6 +67,11 @@ async function ensureIndexes(db: Db): Promise<void> {
     // load (settings, name, preferences). Without this index that read is a
     // collection scan; `id` is the user's unique primary key.
     db.collection("users").createIndex({ id: 1 }, { unique: true }),
+    // The Apple Pay webhook resolves the user from the hash of its Bearer token.
+    db.collection("users").createIndex(
+      { "applePay.tokenHash": 1 },
+      { name: "applePay_tokenHash", unique: true, sparse: true },
+    ),
     db.collection("subscriptions").createIndex({ userId: 1, id: 1 }, { name: "userId_id" }),
     // Cron sweep filters active due subscriptions across all users by billing day.
     db.collection("subscriptions").createIndex(

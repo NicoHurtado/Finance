@@ -28,6 +28,8 @@ interface State {
   seed: (transactions: Transaction[]) => void
   hydrate: () => Promise<void>
   refresh: () => Promise<void>
+  /** Merges movements created elsewhere (e.g. Apple Pay). Returns how many arrived. */
+  pullNew: () => Promise<number>
   add: (data: Omit<Transaction, "id">) => Promise<Transaction | null>
   addMany: (data: Omit<Transaction, "id">[]) => Promise<Transaction[]>
   update: (id: string, patch: Partial<Transaction>) => Promise<void>
@@ -74,6 +76,29 @@ export const useTransactionsStore = create<State>()((set, get) => ({
   refresh: async () => {
     set({ loaded: false, isHydrating: false })
     await get().hydrate()
+  },
+  pullNew: async () => {
+    if (!get().loaded) return 0
+    try {
+      const res = await fetch("/api/transactions", { cache: "no-store" })
+      if (!res.ok) return 0
+      const server = ((await res.json()) as Transaction[]).map(normalizeTransaction)
+      let added: Transaction[] = []
+      // Only append unknown ids: never overwrite local optimistic edits/deletes
+      // that may still be in flight.
+      set((state) => {
+        const known = new Set(state.transactions.map((t) => t.id))
+        added = server.filter((t) => !known.has(t.id))
+        if (added.length === 0) return state
+        const next = [...added, ...state.transactions].sort((a, b) =>
+          b.occurredAt.localeCompare(a.occurredAt)
+        )
+        return { transactions: next, txsByAccountId: buildIndex(next) }
+      })
+      return added.length
+    } catch {
+      return 0
+    }
   },
   add: async (data) => {
     // Optimistic: generate id client-side, update UI immediately, persist in background.

@@ -22,6 +22,11 @@ The UI is in Spanish and amounts are handled in Colombian pesos (COP).
   runway, spending heatmap, recurring subscriptions, category comparisons and
   expense breakdowns.
 - **History** — Browse, filter and edit past transactions.
+- **Apple Pay auto-capture** — An iOS Shortcuts "Transaction" automation posts
+  every Apple Pay payment to `POST /api/integrations/apple-pay` (personal Bearer
+  token, created in *Cuentas → Apple Pay*). The amount is parsed, the merchant
+  mapped to a category and the Wallet card to an account; the PWA pulls new
+  movements when it returns to the foreground.
 - **PWA** — Installable on mobile and desktop, with offline-friendly UX and a
   home-screen shortcut for quick transaction entry.
 - **Secure auth** — Email/password accounts with JWT stored in an httpOnly cookie.
