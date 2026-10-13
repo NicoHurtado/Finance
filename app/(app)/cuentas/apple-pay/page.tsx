@@ -203,7 +203,7 @@ export default function ApplePayPage() {
               onValueChange={(v) => call("PATCH", { defaultAccountId: v === NONE ? null : v })}
               disabled={busy || !config}
             >
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger className="w-full sm:w-auto sm:min-w-64"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value={NONE}>Ninguna (rechazar el pago)</SelectItem>
                 {cards.map((a) => (
@@ -219,13 +219,13 @@ export default function ApplePayPage() {
                 <div key={name} className="flex items-center gap-3 px-3 py-2.5">
                   <Smartphone className="size-4 shrink-0 text-muted-foreground" />
                   <span className="min-w-0 flex-1 truncate text-sm">{name}</span>
-                  <div className="w-44 shrink-0">
+                  <div className="w-1/2 max-w-56 shrink-0">
                     <Select
                       value={config?.cardMap[cardKey(name)] ?? NONE}
                       onValueChange={(v) => mapCard(name, v)}
                       disabled={busy}
                     >
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value={NONE}>Automático</SelectItem>
                         {cards.map((a) => (
