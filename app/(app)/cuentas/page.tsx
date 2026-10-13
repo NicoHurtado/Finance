@@ -70,7 +70,7 @@ export default function CuentasPage() {
         {/* Patrimonio y su composición: una sola tarjeta. Activos y deuda no
             son cifras sueltas flotando en el vacío: cada una ocupa media
             columna y muestra cuánto pesa en la balanza. */}
-        <section className="surface grid gap-6 p-5 md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] md:p-6">
+        <section className="coffee-ink-panel grid gap-6 p-5 md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] md:p-6">
           <div className="flex flex-col justify-center">
             <div className="mb-1 text-[12px] font-medium tracking-[-0.005em] text-muted-foreground">
               Patrimonio neto

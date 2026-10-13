@@ -52,7 +52,7 @@
 }
 
 /* Sistema visual "banca privada": lienzo blanco, tarjetas sólidas con filete
-   fino y un azul marino institucional como único acento de interfaz. Sin vidrio
+   fino y negro como único acento de interfaz. Sin vidrio
    ni brillos: la seriedad viene del contraste, la tipografía y el orden. El
    color queda para los datos. */
 :root {
@@ -62,7 +62,7 @@
     --card-foreground: #0b1526;
     --popover: #ffffff;
     --popover-foreground: #0b1526;
-    --primary: #0b2545;
+    --primary: #0a0a0a;
     --primary-foreground: #ffffff;
     --positive: #0b7a4b;
     --positive-foreground: #ffffff;
@@ -70,12 +70,12 @@
     --secondary-foreground: #0b1526;
     --muted: #f5f7fa;
     --muted-foreground: #5f6b7d;
-    --accent: #eef2f8;
-    --accent-foreground: #0b2545;
+    --accent: #f2f3f5;
+    --accent-foreground: #0a0a0a;
     --destructive: #c4323f;
     --border: #e4e8ee;
     --input: #d9dfe7;
-    --ring: #3d5a80;
+    --ring: #6b7280;
     /* Datos: paleta sobria de banca, legible y nunca chillona. */
     --chart-1: #1f4e8c;
     --chart-2: #13836f;
@@ -85,12 +85,12 @@
     --radius: 0.75rem;
     --sidebar: #fbfcfd;
     --sidebar-foreground: #0b1526;
-    --sidebar-primary: #0b2545;
+    --sidebar-primary: #0a0a0a;
     --sidebar-primary-foreground: #ffffff;
-    --sidebar-accent: #eef2f8;
-    --sidebar-accent-foreground: #0b2545;
+    --sidebar-accent: #f2f3f5;
+    --sidebar-accent-foreground: #0a0a0a;
     --sidebar-border: #e4e8ee;
-    --sidebar-ring: #3d5a80;
+    --sidebar-ring: #6b7280;
 
     /* Materiales: superficies opacas y sombras casi imperceptibles. Los nombres
        --glass-* se conservan para no tocar a quien los consume. */
@@ -243,16 +243,9 @@ button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
   }
 }
 
-/* Marca y navegación */
-.coffee-brand {
-  width: 30px; height: 30px; display: grid; place-items: center;
-  border-radius: 8px; background: var(--primary); color: var(--primary-foreground);
-}
-.coffee-nav-active {
-  background: var(--accent);
-  color: var(--accent-foreground);
-  box-shadow: inset 2px 0 0 0 var(--primary);
-}
+/* Navegación */
+/* Ítem activo: solo cambia de color (texto pleno y trazo más firme). */
+.coffee-nav-active { color: var(--foreground); font-weight: 600; }
 .coffee-nav-active svg { color: inherit; }
 
 /* KPIs */
@@ -263,26 +256,33 @@ button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
 .coffee-kpi-delta[data-tone="up"] { background: color-mix(in srgb, var(--positive) 10%, transparent); }
 .coffee-kpi-delta[data-tone="down"] { background: color-mix(in srgb, var(--destructive) 10%, transparent); }
 
-/* Patrimonio (móvil): la pieza de marca. Azul marino sólido, como el saldo
-   principal de una app bancaria. */
+/* Panel de patrimonio: la pieza de marca. Negro sólido, como el saldo
+   principal de una app bancaria. Redefine los tokens dentro del panel para que
+   cualquier contenido (textos tenues, barras, mosaicos) se lea sobre negro. */
+.coffee-ink-panel,
 .coffee-net-worth {
+  --foreground: #ffffff;
+  --card-foreground: #ffffff;
+  --muted: rgba(255, 255, 255, 0.10);
   --muted-foreground: rgba(255, 255, 255, 0.62);
+  --border: rgba(255, 255, 255, 0.10);
   --positive: #6fe0a6;
   --destructive: #ff9aa2;
-  padding: 22px;
   border-radius: 16px;
   color: #ffffff;
-  background-color: #0b2545;
-  background-image: linear-gradient(135deg, #0f2f57 0%, #0b2545 55%, #081b33 100%);
-  box-shadow: 0 1px 2px rgba(11, 21, 38, 0.08), 0 18px 36px -20px rgba(11, 37, 69, 0.55);
+  background-color: #0a0a0a;
+  background-image: linear-gradient(135deg, #1c1c1e 0%, #0a0a0a 60%, #000000 100%);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08), 0 18px 36px -20px rgba(0, 0, 0, 0.5);
 }
+.coffee-net-worth { padding: 22px; }
+.dark .coffee-ink-panel,
 .dark .coffee-net-worth {
-  background-color: #12213a;
-  background-image: linear-gradient(135deg, #172a48 0%, #12213a 55%, #0d182b 100%);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  background-color: #000000;
+  background-image: linear-gradient(135deg, #18181a 0%, #0a0a0a 60%, #000000 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
 }
 .coffee-net-worth > :first-child { font-weight: 600; letter-spacing: -0.03em; font-size: clamp(1.75rem, 7.8vw, 2.5rem); overflow-wrap: anywhere; }
-.coffee-net-worth .text-destructive { color: var(--destructive); }
+
 
 /* Formularios */
 [data-slot="input"], [data-slot="select-trigger"], textarea {

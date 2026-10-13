@@ -32,7 +32,7 @@ function NavLink({
       className={cn(
         "flex flex-1 flex-col items-center justify-center gap-1 py-2 text-[10px] font-medium tracking-[-0.005em] transition-colors",
         active
-          ? "text-primary"
+          ? "text-foreground font-semibold"
           : "text-muted-foreground"
       )}
     >
@@ -67,7 +67,7 @@ export function BottomNav() {
             type="button"
             aria-label="Añadir transacción"
             onClick={() => openQuickAdd()}
-            className="absolute -top-6 left-1/2 flex size-14 -translate-x-1/2 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-[0_10px_24px_-10px_rgba(11,37,69,0.7)] ring-4 ring-background transition active:scale-95"
+            className="absolute -top-6 left-1/2 flex size-14 -translate-x-1/2 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-[0_10px_24px_-10px_rgba(0,0,0,0.55)] ring-4 ring-background transition active:scale-95"
           >
             <Plus className="size-6" />
           </button>

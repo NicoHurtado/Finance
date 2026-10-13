@@ -28,10 +28,7 @@ export function Sidebar() {
 
   return (
     <aside className="sticky top-0 hidden h-screen w-60 shrink-0 gap-1 border-r bg-sidebar p-3 md:flex md:flex-col">
-      <div className="flex items-center gap-2.5 px-2 pt-2 pb-4">
-        <span className="coffee-brand text-[13px] font-semibold">
-          {(userName || "C").charAt(0).toUpperCase()}
-        </span>
+      <div className="px-3 pt-2 pb-4">
         <div className="min-w-0">
           <div className="truncate text-[14px] leading-tight font-semibold tracking-[-0.01em]">
             {userName}
@@ -56,10 +53,10 @@ export function Sidebar() {
                 "flex items-center gap-3 rounded-md px-3 py-2 text-[13.5px] font-medium tracking-[-0.005em] transition-colors",
                 active
                   ? "coffee-nav-active"
-                  : "text-muted-foreground hover:bg-accent/70 hover:text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <Icon className="size-4" strokeWidth={1.75} />
+              <Icon className="size-4" strokeWidth={active ? 2.1 : 1.75} />
               {it.label}
             </Link>
           )
