@@ -7,7 +7,7 @@
 @theme inline {
     --font-heading: var(--font-sans);
     --font-sans:
-        var(--font-urbanist), -apple-system, BlinkMacSystemFont, "SF Pro Text",
+        var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Text",
         "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
@@ -51,126 +51,107 @@
     --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* Lienzo frío azul-blanco: las tarjetas de vidrio necesitan algo detrás que
-   refractar. La interfaz es neutra; el color queda para los datos. */
+/* Sistema visual "banca privada": lienzo blanco, tarjetas sólidas con filete
+   fino y un azul marino institucional como único acento de interfaz. Sin vidrio
+   ni brillos: la seriedad viene del contraste, la tipografía y el orden. El
+   color queda para los datos. */
 :root {
-    --background: #f1f2f4;
-    --foreground: #101826;
+    --background: #ffffff;
+    --foreground: #0b1526;
     --card: #ffffff;
-    --card-foreground: #101826;
+    --card-foreground: #0b1526;
     --popover: #ffffff;
-    --popover-foreground: #101826;
-    --primary: #101826;
+    --popover-foreground: #0b1526;
+    --primary: #0b2545;
     --primary-foreground: #ffffff;
-    --positive: #0f8a4d;
+    --positive: #0b7a4b;
     --positive-foreground: #ffffff;
-    --secondary: #e8eef7;
-    --secondary-foreground: #1b2537;
-    --muted: #e9eef6;
-    --muted-foreground: #5d6b80;
-    --accent: #e4ebf6;
-    --accent-foreground: #101826;
-    --destructive: #d23f47;
-    --border: #dde5f0;
-    --input: #d5dfec;
-    --ring: #7c8ba3;
-    /* Datos: paleta propia, nunca gris. */
-    --chart-1: #2f6df6;
-    --chart-2: #12a594;
-    --chart-3: #e9a13b;
-    --chart-4: #8b5cf6;
-    --chart-5: #ef6b53;
-    --radius: 0.9rem;
-    --sidebar: transparent;
-    --sidebar-foreground: #101826;
-    --sidebar-primary: #101826;
+    --secondary: #f3f5f8;
+    --secondary-foreground: #0b1526;
+    --muted: #f5f7fa;
+    --muted-foreground: #5f6b7d;
+    --accent: #eef2f8;
+    --accent-foreground: #0b2545;
+    --destructive: #c4323f;
+    --border: #e4e8ee;
+    --input: #d9dfe7;
+    --ring: #3d5a80;
+    /* Datos: paleta sobria de banca, legible y nunca chillona. */
+    --chart-1: #1f4e8c;
+    --chart-2: #13836f;
+    --chart-3: #b7862c;
+    --chart-4: #6b5bb5;
+    --chart-5: #c25b4a;
+    --radius: 0.75rem;
+    --sidebar: #fbfcfd;
+    --sidebar-foreground: #0b1526;
+    --sidebar-primary: #0b2545;
     --sidebar-primary-foreground: #ffffff;
-    --sidebar-accent: #e4ebf6;
-    --sidebar-accent-foreground: #101826;
-    --sidebar-border: #dde5f0;
-    --sidebar-ring: #7c8ba3;
+    --sidebar-accent: #eef2f8;
+    --sidebar-accent-foreground: #0b2545;
+    --sidebar-border: #e4e8ee;
+    --sidebar-ring: #3d5a80;
 
-    /* Material de vidrio (recetas de glasscn: frosted para datos, liquid para
-       las capas que flotan). */
-    --glass: rgba(255, 255, 255, 0.76);
-    --glass-strong: rgba(255, 255, 255, 0.88);
-    --glass-border: rgba(16, 24, 38, 0.08);
-    --glass-hairline: rgba(16, 24, 38, 0.085);
-    --glass-highlight: rgba(255, 255, 255, 0.92);
-    --glass-blur: 18px;
-    --glass-sheen:
-        radial-gradient(120% 85% at 15% 8%, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0.22) 38%, rgba(255,255,255,0) 70%),
-        radial-gradient(110% 80% at 85% 100%, rgba(240,242,245,0.45) 0%, rgba(255,255,255,0) 60%),
-        linear-gradient(180deg, rgba(255,255,255,0.32) 0%, rgba(255,255,255,0.12) 100%);
-    --glass-bevel:
-        inset 0 1px 0 0 rgba(255,255,255,0.85),
-        inset 0 -12px 24px -10px rgba(255,255,255,0.55),
-        inset 1px 0 0 0 rgba(255,255,255,0.35),
-        inset -1px 0 0 0 rgba(255,255,255,0.28);
-    --shadow-soft: 0 1px 2px rgba(16, 24, 38, 0.04), 0 18px 40px -26px rgba(16, 24, 38, 0.30);
-    --shadow-lifted: 0 2px 6px rgba(16, 24, 38, 0.06), 0 34px 72px -28px rgba(16, 24, 38, 0.38);
-    /* Nubes de luz del lienzo. */
-    --canvas:
-        radial-gradient(80% 60% at 12% -12%, #ffffff 0%, rgba(255,255,255,0) 66%),
-        radial-gradient(70% 55% at 96% 2%, #fafbfc 0%, rgba(250,251,252,0) 68%),
-        radial-gradient(90% 65% at 50% 112%, #e7e9ec 0%, rgba(231,233,236,0) 68%);
+    /* Materiales: superficies opacas y sombras casi imperceptibles. Los nombres
+       --glass-* se conservan para no tocar a quien los consume. */
+    --glass: #ffffff;
+    --glass-strong: #ffffff;
+    --glass-border: #e4e8ee;
+    --glass-hairline: #e4e8ee;
+    --glass-highlight: transparent;
+    --glass-blur: 14px;
+    --glass-sheen: none;
+    --glass-bevel: inset 0 0 0 1px var(--border);
+    --shadow-soft: 0 1px 2px rgba(11, 21, 38, 0.04);
+    --shadow-lifted: 0 1px 2px rgba(11, 21, 38, 0.05), 0 16px 40px -16px rgba(11, 21, 38, 0.18);
+    --canvas: none;
 }
 
 .dark {
-    --background: #0b0c0e;
-    --foreground: #eef1f6;
-    --card: #141517;
-    --card-foreground: #eef1f6;
-    --popover: #17181b;
-    --popover-foreground: #eef1f6;
-    --primary: #eef1f6;
-    --primary-foreground: #101826;
-    --positive: #4ecb8a;
-    --positive-foreground: #06210f;
-    --secondary: #1c1d20;
-    --secondary-foreground: #eef1f6;
-    --muted: #16171a;
-    --muted-foreground: #96a1b5;
-    --accent: #1f2023;
-    --accent-foreground: #eef1f6;
-    --destructive: #f0757e;
-    --border: #26282c;
-    --input: #2d2f34;
-    --ring: #7d8ba5;
-    --chart-1: #5b8cff;
-    --chart-2: #2fd4bd;
-    --chart-3: #f2b661;
-    --chart-4: #a78bfa;
-    --chart-5: #ff8a70;
-    --sidebar: transparent;
-    --sidebar-foreground: #eef1f6;
-    --sidebar-primary: #eef1f6;
-    --sidebar-primary-foreground: #101826;
-    --sidebar-accent: #1f2023;
-    --sidebar-accent-foreground: #eef1f6;
-    --sidebar-border: #26282c;
-    --sidebar-ring: #7d8ba5;
+    --background: #0a0e15;
+    --foreground: #e8edf4;
+    --card: #10151e;
+    --card-foreground: #e8edf4;
+    --popover: #121823;
+    --popover-foreground: #e8edf4;
+    --primary: #e8edf4;
+    --primary-foreground: #0b1526;
+    --positive: #3fbf86;
+    --positive-foreground: #04170e;
+    --secondary: #161c27;
+    --secondary-foreground: #e8edf4;
+    --muted: #141a24;
+    --muted-foreground: #8d99ab;
+    --accent: #1a2230;
+    --accent-foreground: #e8edf4;
+    --destructive: #ec6f78;
+    --border: #1f2734;
+    --input: #283141;
+    --ring: #7f9cc4;
+    --chart-1: #6c9be0;
+    --chart-2: #3fbfa6;
+    --chart-3: #d9ab5a;
+    --chart-4: #9d8fe0;
+    --chart-5: #e08775;
+    --sidebar: #0c1119;
+    --sidebar-foreground: #e8edf4;
+    --sidebar-primary: #e8edf4;
+    --sidebar-primary-foreground: #0b1526;
+    --sidebar-accent: #1a2230;
+    --sidebar-accent-foreground: #e8edf4;
+    --sidebar-border: #1f2734;
+    --sidebar-ring: #7f9cc4;
 
-    --glass: rgba(26, 27, 30, 0.66);
-    --glass-strong: rgba(22, 23, 26, 0.88);
-    --glass-border: rgba(255, 255, 255, 0.10);
-    --glass-hairline: rgba(255, 255, 255, 0.08);
-    --glass-highlight: rgba(255, 255, 255, 0.16);
-    --glass-sheen:
-        radial-gradient(120% 85% at 15% 8%, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.05) 40%, rgba(255,255,255,0) 70%),
-        radial-gradient(110% 80% at 85% 100%, rgba(91,140,255,0.14) 0%, rgba(0,0,0,0) 60%),
-        linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(0,0,0,0.20) 100%);
-    --glass-bevel:
-        inset 0 1px 0 0 rgba(255,255,255,0.22),
-        inset 0 -14px 28px -10px rgba(150,185,255,0.14),
-        inset 1px 0 0 0 rgba(255,255,255,0.08),
-        inset -1px 0 0 0 rgba(255,255,255,0.06);
-    --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.45), 0 20px 44px -28px rgba(0, 0, 0, 0.85);
-    --shadow-lifted: 0 2px 8px rgba(0, 0, 0, 0.5), 0 40px 80px -30px rgba(0, 0, 0, 0.95);
-    --canvas:
-        radial-gradient(80% 60% at 12% -12%, #191a1d 0%, rgba(25,26,29,0) 66%),
-        radial-gradient(70% 55% at 96% 2%, #141518 0%, rgba(20,21,24,0) 68%),
-        radial-gradient(90% 65% at 50% 112%, #0e0f11 0%, rgba(14,15,17,0) 68%);
+    --glass: #10151e;
+    --glass-strong: #10151e;
+    --glass-border: #1f2734;
+    --glass-hairline: #1f2734;
+    --glass-highlight: transparent;
+    --glass-sheen: none;
+    --glass-bevel: inset 0 0 0 1px var(--border);
+    --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-lifted: 0 1px 2px rgba(0, 0, 0, 0.4), 0 20px 48px -18px rgba(0, 0, 0, 0.7);
+    --canvas: none;
 }
 
 @layer base {
@@ -194,104 +175,66 @@
     }
 }
 
+
 body {
   background-color: var(--background);
-  background-image: var(--canvas);
-  background-attachment: fixed;
-  background-repeat: no-repeat;
   min-height: 100dvh;
+  font-feature-settings: "cv11", "ss01";
 }
 button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
-:focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; }
-::selection { background: var(--accent); color: var(--accent-foreground); }
+:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+::selection { background: color-mix(in srgb, var(--primary) 14%, transparent); color: var(--foreground); }
 
 /* Unlayered: wins over Tailwind utilities.
-   Las cifras usan la misma tipografía del texto con figuras tabulares —el
-   ajuste de Apple— en vez de una mono de ledger: alinean igual pero se leen
-   como parte del contenido. */
+   Cifras con figuras tabulares y un tracking apenas cerrado: alinean como en
+   un extracto bancario sin perder el ritmo del texto. */
 .tabular-nums {
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-}
-/* ============================================================
-   Material de vidrio — recetas de glasscn (lib/glass-variants.ts)
-   · .surface  = "frosted" con relleno alto: las tarjetas con datos se
-                 leen nítidas y aun así dejan pasar el lienzo.
-   · .glass    = "liquid": bisel multicapa, sheen radial y deriva lenta,
-                 para lo que flota sobre el contenido (nav, menús, KPIs).
-   Sin refracción SVG: es solo Chromium y en iPhone no se vería.
-   ============================================================ */
-.surface {
-  background-color: var(--glass-strong);
-  background-image: var(--glass-sheen);
-  background-size: 200% 200%, 180% 180%, 100% 100%;
-  background-repeat: no-repeat;
-  border-radius: 22px;
-  box-shadow:
-    inset 0 0 0 1px var(--glass-hairline),
-    inset 0 1px 0 0 var(--glass-highlight),
-    var(--shadow-soft);
-}
-.surface-lifted {
-  background-color: var(--glass-strong);
-  background-image: var(--glass-sheen);
-  background-size: 200% 200%, 180% 180%, 100% 100%;
-  background-repeat: no-repeat;
-  border-radius: 26px;
-  box-shadow:
-    inset 0 0 0 1px var(--glass-hairline),
-    inset 0 1px 0 0 var(--glass-highlight),
-    var(--shadow-lifted);
-}
-.glass {
-  background-color: var(--glass);
-  background-image: var(--glass-sheen);
-  background-size: 200% 200%, 180% 180%, 100% 100%;
-  background-repeat: no-repeat;
-  border-color: var(--glass-border);
-  box-shadow: var(--glass-bevel), var(--shadow-soft);
-  animation: liquid-drift 18s ease-in-out infinite;
-  will-change: background-position;
-}
-@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
-  .surface, .surface-lifted {
-    background-color: color-mix(in srgb, var(--glass-strong) 88%, transparent);
-    -webkit-backdrop-filter: blur(16px) saturate(1.6);
-    backdrop-filter: blur(16px) saturate(1.6);
-  }
-  .glass {
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.8) brightness(1.04);
-    backdrop-filter: blur(var(--glass-blur)) saturate(1.8) brightness(1.04);
-  }
-  .dark .glass {
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.6) brightness(0.96);
-    backdrop-filter: blur(var(--glass-blur)) saturate(1.6) brightness(0.96);
-  }
-}
-/* Una tarjeta dentro de otra no vuelve a poner vidrio sobre vidrio. */
-.surface .surface, .surface .surface-lifted {
-  background-image: none;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  box-shadow: inset 0 0 0 1px var(--glass-hairline);
+  letter-spacing: -0.01em;
 }
 
-@keyframes liquid-drift {
-  0%   { background-position: 0% 0%, 100% 100%, 0% 0%; }
-  50%  { background-position: 30% 20%, 70% 80%, 0% 0%; }
-  100% { background-position: 0% 0%, 100% 100%, 0% 0%; }
+/* ============================================================
+   Superficies
+   · .surface / .surface-lifted / [data-slot=card]: tarjeta opaca con filete
+     de 1px. Nada de vidrio: los datos se leen sobre blanco puro.
+   · .glass: lo que flota sobre el contenido (nav móvil, tooltips). Es la
+     única capa con desenfoque, y es sutil.
+   ============================================================ */
+.surface,
+.surface-lifted,
+[data-slot="card"] {
+  background-color: var(--card);
+  background-image: none;
+  border-radius: 14px;
+  box-shadow: inset 0 0 0 1px var(--border), var(--shadow-soft);
+}
+.surface-lifted {
+  box-shadow: inset 0 0 0 1px var(--border), var(--shadow-lifted);
+}
+.glass {
+  background-color: color-mix(in srgb, var(--card) 92%, transparent);
+  background-image: none;
+  border-color: var(--border);
+  box-shadow: var(--shadow-lifted);
+}
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .glass {
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
+    backdrop-filter: blur(var(--glass-blur)) saturate(1.4);
+  }
+}
+/* Una tarjeta dentro de otra no duplica sombra. */
+.surface .surface, .surface .surface-lifted {
+  box-shadow: inset 0 0 0 1px var(--border);
 }
 
 /* Las gráficas heredan estos trazos: extremos redondeados y rejilla tenue. */
-.recharts-cartesian-grid line {
-  stroke-opacity: 0.35;
-}
+.recharts-cartesian-grid line { stroke-opacity: 0.6; }
 .recharts-curve.recharts-line-curve,
 .recharts-curve.recharts-area-curve {
   stroke-linecap: round;
   stroke-linejoin: round;
 }
-
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -300,67 +243,90 @@ button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
   }
 }
 
-/* Las tarjetas de shadcn comparten el mismo material que .surface. */
-[data-slot="card"] {
-  border-radius: 22px;
-  background-color: var(--glass-strong);
-  background-image: var(--glass-sheen);
-  background-size: 200% 200%, 180% 180%, 100% 100%;
-  background-repeat: no-repeat;
-  box-shadow:
-    inset 0 0 0 1px var(--glass-hairline),
-    inset 0 1px 0 0 var(--glass-highlight),
-    var(--shadow-soft);
-}
+/* Marca y navegación */
 .coffee-brand {
-  width: 32px; height: 32px; display: grid; place-items: center;
-  border-radius: 10px; background: var(--foreground); color: var(--background);
+  width: 30px; height: 30px; display: grid; place-items: center;
+  border-radius: 8px; background: var(--primary); color: var(--primary-foreground);
 }
-.coffee-nav-active { background: var(--accent); color: var(--foreground); }
+.coffee-nav-active {
+  background: var(--accent);
+  color: var(--accent-foreground);
+  box-shadow: inset 2px 0 0 0 var(--primary);
+}
 .coffee-nav-active svg { color: inherit; }
+
+/* KPIs */
 .coffee-kpi { min-width: 0; container-type: inline-size; }
-.coffee-kpi-value { font-size: clamp(0.875rem, 14cqi, 1.75rem); font-weight: 500; letter-spacing: -0.04em; white-space: nowrap; line-height: 1.2; }
+.coffee-kpi-value { font-size: clamp(0.875rem, 12.5cqi, 1.5rem); font-weight: 600; letter-spacing: -0.025em; white-space: nowrap; line-height: 1.2; }
 .coffee-kpi-icon { color: var(--muted-foreground); }
-.coffee-kpi-delta { width: fit-content; border-radius: 6px; padding: 3px 6px; }
-.coffee-kpi-delta[data-tone="up"] { background: color-mix(in srgb, var(--positive) 8%, transparent); }
-.coffee-kpi-delta[data-tone="down"] { background: color-mix(in srgb, var(--destructive) 8%, transparent); }
+.coffee-kpi-delta { width: fit-content; border-radius: 4px; padding: 2px 6px; }
+.coffee-kpi-delta[data-tone="up"] { background: color-mix(in srgb, var(--positive) 10%, transparent); }
+.coffee-kpi-delta[data-tone="down"] { background: color-mix(in srgb, var(--destructive) 10%, transparent); }
+
+/* Patrimonio (móvil): la pieza de marca. Azul marino sólido, como el saldo
+   principal de una app bancaria. */
 .coffee-net-worth {
-  padding: 24px; border-radius: 24px;
-  background-color: var(--glass);
-  background-image: var(--glass-sheen);
-  background-size: 200% 200%, 180% 180%, 100% 100%;
-  background-repeat: no-repeat;
-  box-shadow: var(--glass-bevel), var(--shadow-soft);
+  --muted-foreground: rgba(255, 255, 255, 0.62);
+  --positive: #6fe0a6;
+  --destructive: #ff9aa2;
+  padding: 22px;
+  border-radius: 16px;
+  color: #ffffff;
+  background-color: #0b2545;
+  background-image: linear-gradient(135deg, #0f2f57 0%, #0b2545 55%, #081b33 100%);
+  box-shadow: 0 1px 2px rgba(11, 21, 38, 0.08), 0 18px 36px -20px rgba(11, 37, 69, 0.55);
 }
-.coffee-net-worth > :first-child { font-weight: 500; font-size: clamp(1.75rem, 7.8vw, 2.75rem); overflow-wrap: anywhere; }
+.dark .coffee-net-worth {
+  background-color: #12213a;
+  background-image: linear-gradient(135deg, #172a48 0%, #12213a 55%, #0d182b 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+.coffee-net-worth > :first-child { font-weight: 600; letter-spacing: -0.03em; font-size: clamp(1.75rem, 7.8vw, 2.5rem); overflow-wrap: anywhere; }
+.coffee-net-worth .text-destructive { color: var(--destructive); }
+
+/* Formularios */
 [data-slot="input"], [data-slot="select-trigger"], textarea {
-  border-radius: 12px;
-  background-color: color-mix(in srgb, var(--card) 70%, transparent);
-  box-shadow: inset 0 0 0 1px var(--glass-hairline);
+  border-radius: 8px;
+  background-color: var(--card);
+  box-shadow: inset 0 0 0 1px var(--input);
+  border-color: transparent;
 }
-[data-slot="dialog-content"], [data-slot="sheet-content"], [data-slot="popover-content"], [data-slot="dropdown-menu-content"] {
-  background-color: color-mix(in srgb, var(--glass-strong) 94%, transparent);
-  background-image: var(--glass-sheen);
-  background-size: 200% 200%, 180% 180%, 100% 100%;
-  background-repeat: no-repeat;
-  backdrop-filter: blur(24px) saturate(1.7);
-  -webkit-backdrop-filter: blur(24px) saturate(1.7);
-  box-shadow: var(--glass-bevel), var(--shadow-lifted);
+[data-slot="input"]:focus-visible, [data-slot="select-trigger"]:focus-visible, textarea:focus-visible {
+  box-shadow: inset 0 0 0 1px var(--ring), 0 0 0 3px color-mix(in srgb, var(--ring) 18%, transparent);
+  outline: none;
 }
-[data-slot="dialog-content"] { border-radius: 24px; }
-[data-slot="popover-content"], [data-slot="dropdown-menu-content"] { border-radius: 16px; }
-[data-slot="table-head"] { font-size: 11px; font-weight: 500; color: var(--muted-foreground); }
-[data-slot="table-row"] { border-color: color-mix(in srgb, var(--border) 75%, transparent); }
-[data-slot="table-cell"] { padding-block: 16px; }
-[data-slot="tabs-list"] { border-radius: 999px; padding: 4px; }
-[data-slot="tabs-trigger"] { border-radius: 999px; }
+
+/* Capas flotantes */
+[data-slot="dialog-content"], [data-slot="sheet-content"], [data-slot="popover-content"], [data-slot="dropdown-menu-content"], [data-slot="select-content"] {
+  background-color: var(--popover);
+  background-image: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: inset 0 0 0 1px var(--border), var(--shadow-lifted);
+}
+[data-slot="dialog-content"] { border-radius: 16px; }
+[data-slot="sheet-content"][data-side="bottom"] { border-radius: 16px 16px 0 0; }
+[data-slot="popover-content"], [data-slot="dropdown-menu-content"], [data-slot="select-content"] { border-radius: 10px; }
+[data-slot="dialog-overlay"], [data-slot="sheet-overlay"] { background-color: rgba(8, 14, 24, 0.45); }
+
+/* Botones: rectángulos con esquina suave, no píldoras. */
+[data-slot="button"] { border-radius: 8px; }
+
+/* Tablas: cabecera de libro contable. */
+[data-slot="table-head"] { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted-foreground); }
+[data-slot="table-row"] { border-color: var(--border); }
+[data-slot="table-cell"] { padding-block: 14px; }
+
+/* Segmentados: carril gris con la opción activa en blanco. */
+[data-slot="tabs-list"] { border-radius: 8px; padding: 3px; background-color: var(--secondary); }
+[data-slot="tabs-trigger"] { border-radius: 6px; }
+[data-slot="tabs-trigger"][data-state="active"] { box-shadow: 0 1px 2px rgba(11, 21, 38, 0.08), inset 0 0 0 1px var(--border); }
+
 [data-slot="chart"] { font-family: var(--font-sans); }
-.recharts-cartesian-grid line { stroke-opacity: 0.7; }
+[data-slot="badge"] { border-radius: 6px; }
+
 /* El arte de cada tarjeta conserva su color original. */
 @media (max-width: 767px) {
-  .surface, .surface-lifted, [data-slot="card"] { border-radius: 20px; }
-  .surface, .surface-lifted { backdrop-filter: blur(12px) saturate(1.5); -webkit-backdrop-filter: blur(12px) saturate(1.5); }
-  .glass { backdrop-filter: blur(16px) saturate(1.7); -webkit-backdrop-filter: blur(16px) saturate(1.7); }
   [data-slot="input"], [data-slot="select-trigger"], textarea { font-size: 16px; min-height: 44px; }
   [data-slot="dialog-content"] { max-height: 90dvh; overflow-y: auto; }
   .coffee-chart-heading { flex-wrap: wrap; row-gap: 12px; }

@@ -27,13 +27,19 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="glass sticky top-3 my-3 ml-3 hidden h-[calc(100vh-1.5rem)] w-60 shrink-0 gap-1 rounded-3xl border p-3 md:flex md:flex-col">
-      <div className="px-2 py-3">
-        <div className="truncate text-[18px] leading-tight font-semibold tracking-[-0.03em]">
-          {userName}
+    <aside className="sticky top-0 hidden h-screen w-60 shrink-0 gap-1 border-r bg-sidebar p-3 md:flex md:flex-col">
+      <div className="flex items-center gap-2.5 px-2 pt-2 pb-4">
+        <span className="coffee-brand text-[13px] font-semibold">
+          {(userName || "C").charAt(0).toUpperCase()}
+        </span>
+        <div className="min-w-0">
+          <div className="truncate text-[14px] leading-tight font-semibold tracking-[-0.01em]">
+            {userName}
+          </div>
+          <div className="text-[11px] text-muted-foreground">Finanzas personales</div>
         </div>
       </div>
-      <div className="px-3.5 pt-3 pb-1.5 text-[11px] font-medium tracking-[-0.005em] text-muted-foreground">
+      <div className="px-3 pt-3 pb-1.5 text-[10.5px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
         General
       </div>
       <div className="flex flex-1 flex-col gap-0.5">
@@ -47,13 +53,13 @@ export function Sidebar() {
               href={it.href}
               prefetch
               className={cn(
-                "flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-[14px] font-medium tracking-[-0.01em] transition-colors",
+                "flex items-center gap-3 rounded-md px-3 py-2 text-[13.5px] font-medium tracking-[-0.005em] transition-colors",
                 active
                   ? "coffee-nav-active"
-                  : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+                  : "text-muted-foreground hover:bg-accent/70 hover:text-foreground"
               )}
             >
-              <Icon className={cn("size-4", active && "text-primary")} />
+              <Icon className="size-4" strokeWidth={1.75} />
               {it.label}
             </Link>
           )
@@ -61,11 +67,11 @@ export function Sidebar() {
       </div>
       {usdToCop && (
         <div
-          className="surface mt-1 flex items-center justify-between rounded-2xl px-3.5 py-3"
+          className="mt-1 flex items-center justify-between rounded-lg border bg-card px-3 py-2.5"
           title={trmDate ? `TRM vigente ${trmDate}` : undefined}
         >
           <div className="flex flex-col">
-            <span className="text-[10px] font-medium text-muted-foreground">
+            <span className="text-[10px] font-semibold tracking-[0.08em] text-muted-foreground uppercase">
               TRM
             </span>
             <span className="text-[13px] font-semibold tabular-nums">
@@ -83,7 +89,7 @@ export function Sidebar() {
         <button
           type="button"
           onClick={handleLogout}
-          className="flex w-full items-center gap-2.5 rounded-xl px-2 py-2 text-xs text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
+          className="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
         >
           <LogOut className="size-3.5" />
           Salir

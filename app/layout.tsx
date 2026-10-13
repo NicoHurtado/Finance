@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist_Mono, Urbanist } from "next/font/google"
+import { Geist_Mono, Inter } from "next/font/google"
 
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
@@ -23,15 +23,18 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#09090b",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0e15" },
+  ],
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
 };
 
-// Urbanist: la geométrica del specimen de referencia. Redonda y ligera, es la
-// que da el aire de los tableros que sirvieron de guía.
-const fontSans = Urbanist({ subsets: ["latin"], variable: "--font-urbanist", display: "swap" });
+// Inter: la grotesca neutra de la banca digital. Sobria, muy legible en cifras
+// pequeñas y con figuras tabulares reales para los montos.
+const fontSans = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 
 const fontMono = Geist_Mono({
   subsets: ["latin"],

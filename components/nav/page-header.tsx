@@ -31,7 +31,7 @@ export function PageHeader({
         <h1 className="text-[30px] md:text-[34px] font-semibold tracking-[-0.03em] leading-tight">{title}</h1>
         {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
       </div>
-      {children && <div className="flex items-center gap-2 shrink-0">{children}</div>}
+      {children && <div className="flex flex-wrap items-center gap-2 max-w-full">{children}</div>}
     </div>
   );
 }
