@@ -106,6 +106,7 @@ export default function EditarCuentaPage({
     account?.type === "fixed_income" ? (account.goalName ?? "") : "",
   );
   const [isActive, setIsActive] = useState(account?.active !== false);
+  const [showOnHome, setShowOnHome] = useState(account?.showOnHome !== false);
 
   // investment sync
   const [syncEnabled, setSyncEnabled] = useState(
@@ -146,6 +147,7 @@ export default function EditarCuentaPage({
       initialBalance: parseFloat(initialBalance),
       color,
       active: isActive,
+      showOnHome,
       // null = borrar el campo en la DB (el API lo traduce a $unset)
       miniLabel:
         (account.type === "fixed_income" || account.type === "investment") &&
@@ -506,6 +508,16 @@ export default function EditarCuentaPage({
               </div>
             </div>
             <Switch checked={isActive} onCheckedChange={setIsActive} />
+          </div>
+
+          <div className="flex items-center justify-between rounded-xl border px-4 py-3">
+            <div>
+              <div className="text-sm font-medium">Mostrar en Inicio</div>
+              <div className="text-xs text-muted-foreground">
+                {showOnHome ? "Aparece en la pantalla principal" : "Solo aparece en Cuentas"}
+              </div>
+            </div>
+            <Switch checked={showOnHome} onCheckedChange={setShowOnHome} />
           </div>
 
           <div className="hidden md:block pt-2">

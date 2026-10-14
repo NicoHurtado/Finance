@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { PageHeader, SectionHeading } from "@/components/nav/page-header";
 import { AccountPreviewCard } from "@/components/accounts/account-preview-card";
 import { ColorPicker } from "@/components/accounts/color-picker";
@@ -42,6 +43,7 @@ export default function NuevaCuentaPage() {
   // Card artwork: a pinned real-card design and/or a photo of the actual card.
   const [presetId, setPresetId] = useState<string | undefined>(undefined);
   const [artImageUrl, setArtImageUrl] = useState("");
+  const [showOnHome, setShowOnHome] = useState(true);
 
   // Debit also keeps optional network + last4 for the physical card look
   const [debitLast4, setDebitLast4] = useState("");
@@ -82,6 +84,7 @@ export default function NuevaCuentaPage() {
       currency,
       initialBalance: parseFloat(initialBalance),
       color,
+      showOnHome,
       miniLabel:
         (type === "fixed_income" || type === "investment") && miniLabel.trim()
           ? miniLabel.trim().toUpperCase()
@@ -424,6 +427,16 @@ export default function NuevaCuentaPage() {
               </div>
             </div>
           )}
+
+          <div className="flex items-center justify-between rounded-xl border px-4 py-3">
+            <div>
+              <div className="text-sm font-medium">Mostrar en Inicio</div>
+              <div className="text-xs text-muted-foreground">
+                {showOnHome ? "Aparece en la pantalla principal" : "Solo aparece en Cuentas"}
+              </div>
+            </div>
+            <Switch checked={showOnHome} onCheckedChange={setShowOnHome} />
+          </div>
 
           <Button disabled={!valid} onClick={submit} className="w-full h-12 text-base">
             Crear Cuenta
