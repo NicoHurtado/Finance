@@ -56,15 +56,19 @@ export function DataHydrator() {
     hydrateSubscriptions,
   ]);
 
-  // Movements can arrive while the app is closed (Apple Pay via Shortcuts).
-  // Pull them whenever the PWA comes back to the foreground.
+  // Movements can arrive while the app is closed (Apple Pay via Shortcuts), and
+  // accounts can be created from another device. Pull both whenever the PWA
+  // comes back to the foreground, so a new card shows up on Home right away.
   useEffect(() => {
     let lastPull = Date.now();
     async function onVisible() {
       if (document.visibilityState !== "visible") return;
       if (Date.now() - lastPull < 15_000) return;
       lastPull = Date.now();
-      const count = await useTransactionsStore.getState().pullNew();
+      const [, count] = await Promise.all([
+        useAccountsStore.getState().pullNew(),
+        useTransactionsStore.getState().pullNew(),
+      ]);
       if (count > 0) {
         toast.success(count === 1 ? "1 movimiento nuevo" : `${count} movimientos nuevos`);
       }

@@ -29,6 +29,8 @@ interface State {
   seed: (accounts: Account[]) => void
   hydrate: () => Promise<void>
   refresh: () => Promise<void>
+  /** Trae las cuentas creadas en otro dispositivo. Devuelve cuántas llegaron. */
+  pullNew: () => Promise<number>
   add: (data: Omit<Account, "id" | "createdAt">) => Promise<Account>
   update: (id: string, patch: Partial<Account>) => Promise<void>
   setHomeVisibility: (id: string, visible: boolean) => Promise<void>
@@ -70,6 +72,28 @@ export const useAccountsStore = create<State>()((set, get) => ({
   refresh: async () => {
     set({ loaded: false, isHydrating: false })
     await get().hydrate()
+  },
+  pullNew: async () => {
+    if (!get().loaded) return 0
+    try {
+      const res = await fetch("/api/accounts", { cache: "no-store" })
+      if (!res.ok) return 0
+      const server: Account[] = await res.json()
+      let added = 0
+      // Solo se agregan ids desconocidos: nunca se pisan ediciones locales
+      // optimistas que sigan en vuelo.
+      set((state) => {
+        const known = new Set(state.accounts.map((a) => a.id))
+        const fresh = server.filter((a) => !known.has(a.id))
+        added = fresh.length
+        if (added === 0) return state
+        const accounts = sortAccounts([...state.accounts, ...fresh])
+        return { accounts, activeAccounts: deriveActive(accounts) }
+      })
+      return added
+    } catch {
+      return 0
+    }
   },
   add: async (data) => {
     // Optimistic: build the account locally and show it immediately.
