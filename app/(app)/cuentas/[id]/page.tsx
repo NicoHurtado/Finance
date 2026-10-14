@@ -30,6 +30,8 @@ import { useExchangeRateStore } from "@/lib/store/exchange-rate";
 import { AccountActivity } from "@/components/accounts/account-activity";
 import { AdjustBalanceDialog } from "@/components/accounts/adjust-balance-dialog";
 import { InvestmentBalanceChart } from "@/components/accounts/investment-balance-chart";
+import { InstallmentPurchases } from "@/components/accounts/installment-purchases";
+import { creditPaymentSummary } from "@/lib/finance/installments";
 
 export default function AccountDetailPage({
   params,
@@ -151,6 +153,8 @@ export default function AccountDetailPage({
         );
 
   const util = account.type === "credit" ? utilizationPct(account, txs) : 0;
+  const payment = account.type === "credit" ? creditPaymentSummary(txs, balance) : null;
+  const hasDeferred = !!payment && payment.active.length > 0;
 
   /** Cifras del producto: mismas casillas para todos, contenido por tipo. */
   const metrics: { label: string; value: string; tone?: "up" | "down"; progress?: number }[] =
@@ -282,6 +286,18 @@ export default function AccountDetailPage({
             >
               {formatAccountBalance(account.type, balance, account.currency)}
             </div>
+            {hasDeferred && payment && (
+              <div className="mt-2 text-xs text-muted-foreground tabular-nums">
+                Pago del mes{" "}
+                <span className="font-medium text-foreground">
+                  {formatMoney(payment.monthlyPayment, account.currency)}
+                </span>
+                <span className="text-muted-foreground/80">
+                  {" "}· {formatMoney(payment.singlePayment, account.currency)} a 1 cuota +{" "}
+                  {formatMoney(payment.installmentsTotal, account.currency)} en cuotas
+                </span>
+              </div>
+            )}
             {isInvestmentUsd && copValue && (
               <div className="mt-1.5 text-xs text-muted-foreground tabular-nums">{copValue} COP</div>
             )}
@@ -344,6 +360,8 @@ export default function AccountDetailPage({
       </section>
 
       {account.type === "investment" && <InvestmentBalanceChart account={account} />}
+
+      {hasDeferred && payment && <InstallmentPurchases summary={payment} currency={account.currency} />}
 
       <AccountActivity accountId={account.id} />
 

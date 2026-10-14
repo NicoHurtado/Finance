@@ -17,7 +17,8 @@ import { AmountDisplay } from "./amount-display"
 import { CategoryPicker } from "./category-picker"
 import { NumericKeypad } from "./numeric-keypad"
 import { AccountPicker } from "./account-picker"
-import { type TransactionKind } from "@/lib/types"
+import { InstallmentsPicker } from "./installments-picker"
+import { type Installments, type TransactionKind } from "@/lib/types"
 import { useCategoriesStore } from "@/lib/store/categories"
 import { getCategoryIcon } from "@/lib/finance/categories"
 import { cn } from "@/lib/utils"
@@ -64,6 +65,7 @@ function QuickAddBody({
   )
   const [destinationId, setDestinationId] = useState<string | undefined>()
   const [description, setDescription] = useState("")
+  const [installments, setInstallments] = useState<Installments | undefined>()
 
   const amountInputRef = useRef<HTMLInputElement>(null)
 
@@ -78,6 +80,16 @@ function QuickAddBody({
   const amountNum = parseFloat(amount || "0")
   const sourceAccount = accounts.find((a) => a.id === accountId)
   const destinationAccount = accounts.find((a) => a.id === destinationId)
+  // Las compras con tarjeta de crédito pueden diferirse; por defecto, 1 cuota.
+  const canDefer = kind === "expense" && sourceAccount?.type === "credit"
+  const installmentsPicker = canDefer ? (
+    <InstallmentsPicker
+      amount={amountNum}
+      currency={sourceAccount.currency}
+      value={installments}
+      onChange={setInstallments}
+    />
+  ) : null
   const transferCurrencyMismatch =
     isTransfer &&
     !!sourceAccount &&
@@ -140,6 +152,7 @@ function QuickAddBody({
       category,
       description: description || undefined,
       occurredAt: now,
+      ...(canDefer && installments ? { installments } : {}),
     })
     if (!saved) return
     await setLastUsedAccount(accountId)
@@ -221,6 +234,7 @@ function QuickAddBody({
             <div className="space-y-1.5">
               <Label>Cuenta</Label>
               <AccountPicker value={accountId} onChange={setAccountId} />
+              {installmentsPicker}
             </div>
 
             <div className="space-y-1.5">
@@ -337,6 +351,7 @@ function QuickAddBody({
           <div className="space-y-2">
             <div className="text-xs text-muted-foreground">Cuenta</div>
             <AccountPicker value={accountId} onChange={setAccountId} />
+            {installmentsPicker}
           </div>
         </>
       )}

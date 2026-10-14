@@ -53,7 +53,19 @@ export async function PATCH(
       { $set: { amount: next.amount, occurredAt: next.occurredAt } },
     );
   }
-  await db.collection<Transaction>("transactions").updateOne({ id, userId: uid }, { $set: rest });
+  // Un plan de cuotas solo vive en gastos de tarjetas de crédito: si el
+  // movimiento deja de serlo (o se pide null), se vuelve a una cuota.
+  const { installments, ...fields } = rest as { installments?: unknown; [k: string]: unknown };
+  const keepInstallments = next.kind === "expense" && account.type === "credit";
+  if (installments && !keepInstallments) {
+    return NextResponse.json({ error: "Solo las compras con tarjeta de crédito se pueden diferir a cuotas" }, { status: 400 });
+  }
+  const $set: Record<string, unknown> = { ...fields };
+  if (installments) $set.installments = next.installments;
+  const update: { $set?: Record<string, unknown>; $unset?: Record<string, ""> } = {};
+  if (Object.keys($set).length > 0) update.$set = $set;
+  if (!installments && (installments === null || !keepInstallments)) update.$unset = { installments: "" };
+  await db.collection<Transaction>("transactions").updateOne({ id, userId: uid }, update);
   const doc = await db
     .collection<Transaction>("transactions")
     .findOne({ id, userId: uid }, { projection: { _id: 0, userId: 0 } });

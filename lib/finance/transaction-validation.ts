@@ -1,7 +1,14 @@
 import { z } from "zod"
 import type { Transaction } from "@/lib/types"
+import { MAX_INSTALLMENTS } from "./installments"
 
 const kindSchema = z.enum(["expense", "income", "adjustment", "transfer"])
+
+export const installmentsSchema = z.object({
+  count: z.number().int().min(2).max(MAX_INSTALLMENTS),
+  rate: z.number().finite().min(0).max(1000),
+  rateType: z.enum(["monthly", "annual"]),
+})
 
 export const transactionSchema = z
   .object({
@@ -18,6 +25,8 @@ export const transactionSchema = z
       }),
     transferPairId: z.string().min(1).optional(),
     direction: z.enum(["in", "out"]).optional(),
+    // null = quitar el plan de cuotas (volver a una cuota) en un PATCH.
+    installments: installmentsSchema.nullable().optional(),
   })
   .superRefine((tx, ctx) => {
     if (tx.kind === "adjustment") {
@@ -37,6 +46,13 @@ export const transactionSchema = z
         message: "El monto debe ser positivo",
       })
     }
+    if (tx.installments && tx.kind !== "expense") {
+      ctx.addIssue({
+        code: "custom",
+        path: ["installments"],
+        message: "Solo los gastos se pueden diferir a cuotas",
+      })
+    }
     if (tx.kind === "transfer" && (!tx.direction || !tx.transferPairId)) {
       ctx.addIssue({
         code: "custom",
@@ -46,5 +62,6 @@ export const transactionSchema = z
   })
 
 export function parseTransaction(value: unknown): Transaction {
-  return transactionSchema.parse(value) as Transaction
+  const { installments, ...tx } = transactionSchema.parse(value)
+  return (installments ? { ...tx, installments } : tx) as Transaction
 }

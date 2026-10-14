@@ -3,6 +3,7 @@ import { createElement } from "react";
 import { format } from "date-fns";
 import { getCategoryIcon } from "@/lib/finance/categories";
 import { signedAmount } from "@/lib/finance/format";
+import { installmentStatus, isDeferred } from "@/lib/finance/installments";
 import type { Transaction, Currency, AccountType } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -45,6 +46,12 @@ export function TransactionItem({
         </div>
         <div className="text-[10.5px] tracking-[-0.005em] text-muted-foreground truncate tabular-nums">
           {tx.category}
+          {isExpense && isDeferred(tx.installments)
+            ? (() => {
+                const st = installmentStatus(tx, tx.installments);
+                return st.finished ? ` · ${st.count} cuotas` : ` · Cuota ${st.current}/${st.count}`;
+              })()
+            : ""}
           {showTime ? ` · ${format(new Date(tx.occurredAt), "HH:mm")}` : ""}
         </div>
       </div>

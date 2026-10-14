@@ -67,6 +67,9 @@ export async function POST(req: Request) {
       if (transactions.some((tx) => tx.kind === "adjustment" && accounts.find((a) => a.id === tx.accountId)?.type !== "investment")) {
         throw new Error("INVALID_ADJUSTMENT");
       }
+      if (transactions.some((tx) => tx.installments && accounts.find((a) => a.id === tx.accountId)?.type !== "credit")) {
+        throw new Error("INVALID_INSTALLMENTS");
+      }
       if (transferBatch) {
         const [first, second] = transactions;
         if (!isValidTransferPair([first, second], accounts)) throw new Error("INVALID_TRANSFER_PAIR");
@@ -79,6 +82,9 @@ export async function POST(req: Request) {
     }
     if (error instanceof Error && error.message === "INVALID_TRANSFER_PAIR") {
       return NextResponse.json({ error: "Las dos partes del traslado no cuadran" }, { status: 400 });
+    }
+    if (error instanceof Error && error.message === "INVALID_INSTALLMENTS") {
+      return NextResponse.json({ error: "Solo las compras con tarjeta de crédito se pueden diferir a cuotas" }, { status: 400 });
     }
     if (error instanceof Error && error.message === "INVALID_ADJUSTMENT") {
       return NextResponse.json({ error: "Los ajustes absolutos solo aplican a inversiones" }, { status: 400 });

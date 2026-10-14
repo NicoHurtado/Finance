@@ -77,6 +77,19 @@ export interface Subscription {
   lastChargedMonth?: string;
 }
 
+export type InstallmentRateType = "monthly" | "annual";
+
+/** Compra con tarjeta de crédito diferida a varias cuotas. Sin este campo la
+ *  compra es a una sola cuota (el comportamiento por defecto). */
+export interface Installments {
+  /** Número de cuotas (2-72). */
+  count: number;
+  /** Tasa de interés en porcentaje (p. ej. 1.9 para 1,9%). 0 = sin interés. */
+  rate: number;
+  /** "monthly" = mes vencido (M.V.), "annual" = efectiva anual (E.A.). */
+  rateType: InstallmentRateType;
+}
+
 export interface Transaction {
   id: string;
   accountId: string;
@@ -89,4 +102,6 @@ export interface Transaction {
   /** Solo cuando kind === "transfer": "out" sale de la cuenta, "in" entra.
    *  Registros viejos sin este campo se tratan como "out" (compat). */
   direction?: TransferDirection;
+  /** Solo gastos en tarjetas de crédito diferidos a más de una cuota. */
+  installments?: Installments;
 }

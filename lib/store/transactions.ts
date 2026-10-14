@@ -2,7 +2,20 @@
 import { create } from "zustand"
 import { v4 as uuid } from "uuid"
 import { toast } from "sonner"
-import type { Transaction } from "@/lib/types"
+import type { Installments, Transaction } from "@/lib/types"
+
+/** `installments: null` quita el plan de cuotas (vuelve a una cuota). */
+export type TransactionPatch = Partial<Omit<Transaction, "installments">> & {
+  installments?: Installments | null
+}
+
+function applyPatch(tx: Transaction, patch: TransactionPatch): Transaction {
+  const { installments, ...rest } = patch
+  const next: Transaction = { ...tx, ...rest }
+  if (installments) next.installments = installments
+  else if (installments === null) delete next.installments
+  return next
+}
 import { normalizeTransaction } from "@/lib/finance/transactions"
 
 const EMPTY_TXS: Transaction[] = []
@@ -32,7 +45,7 @@ interface State {
   pullNew: () => Promise<number>
   add: (data: Omit<Transaction, "id">) => Promise<Transaction | null>
   addMany: (data: Omit<Transaction, "id">[]) => Promise<Transaction[]>
-  update: (id: string, patch: Partial<Transaction>) => Promise<void>
+  update: (id: string, patch: TransactionPatch) => Promise<void>
   remove: (id: string) => Promise<void>
   forAccount: (accountId: string) => Transaction[]
 }
@@ -180,7 +193,7 @@ export const useTransactionsStore = create<State>()((set, get) => ({
     let optimisticSibling: Transaction | undefined
     const transactions = current.map((t) => {
       if (t.id === id) {
-        optimisticTarget = { ...t, ...patch }
+        optimisticTarget = applyPatch(t, patch)
         return optimisticTarget
       }
       if (applySibling && t.id === sibling!.id) {
@@ -191,7 +204,7 @@ export const useTransactionsStore = create<State>()((set, get) => ({
     })
     set({ transactions, txsByAccountId: buildIndex(transactions) })
 
-    const patchReq = (txId: string, body: Partial<Transaction>) =>
+    const patchReq = (txId: string, body: TransactionPatch) =>
       fetch(`/api/transactions/${txId}`, {
         method: "PATCH",
         headers: { "content-type": "application/json" },

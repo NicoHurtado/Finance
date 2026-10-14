@@ -22,7 +22,8 @@ import {
 import { useTransactionsStore } from "@/lib/store/transactions";
 import { useAccountsStore } from "@/lib/store/accounts";
 import { useCategoriesStore } from "@/lib/store/categories";
-import { type Transaction, type TransactionKind } from "@/lib/types";
+import { type Installments, type Transaction, type TransactionKind } from "@/lib/types";
+import { InstallmentsPicker } from "./installments-picker";
 
 interface Props {
   tx: Transaction | null;
@@ -65,8 +66,11 @@ function TransactionEditForm({
   const [description, setDescription] = useState(tx.description ?? "");
   const [occurredAt, setOccurredAt] = useState(toLocalDateTime(tx.occurredAt));
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [installments, setInstallments] = useState<Installments | undefined>(tx.installments);
 
   const amountNum = parseFloat(amount || "0");
+  const account = accounts.find((a) => a.id === accountId);
+  const canDefer = kind === "expense" && account?.type === "credit";
   const canSave = amountNum > 0 && !!accountId && !!category;
 
   const save = async () => {
@@ -78,6 +82,7 @@ function TransactionEditForm({
       accountId,
       description: description || undefined,
       occurredAt: new Date(occurredAt).toISOString(),
+      installments: canDefer && installments ? installments : null,
     });
     toast.success("Transacción actualizada");
     onOpenChange(false);
@@ -132,6 +137,14 @@ function TransactionEditForm({
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
               />
+              {canDefer && (
+                <InstallmentsPicker
+                  amount={amountNum}
+                  currency={account.currency}
+                  value={installments}
+                  onChange={setInstallments}
+                />
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-3">
