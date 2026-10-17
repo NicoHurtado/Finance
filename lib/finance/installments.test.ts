@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest"
 import type { Transaction } from "@/lib/types"
 import { creditPaymentSummary, installmentPlan, installmentStatus, monthlyRate } from "./installments"
+import { portfolioTotals } from "./net-worth"
 import { parseTransaction } from "./transaction-validation"
+import type { Account } from "@/lib/types"
 
 const purchase = (amount: number, occurredAt: string, count: number, rate = 0): Transaction => ({
   id: `tx-${amount}`,
@@ -46,6 +48,20 @@ describe("installments", () => {
     expect(summary.installmentsTotal).toBe(100_000)
     expect(summary.singlePayment).toBe(300_000)
     expect(summary.monthlyPayment).toBe(400_000)
+  })
+
+  it("subtracts only the next payment from liquidity, not the whole debt", () => {
+    const accounts = [
+      { id: "bank", type: "debit", institution: "B", name: "B", currency: "COP", initialBalance: 2_000_000, createdAt: "2026-01-01T00:00:00Z" },
+      { id: "card", type: "credit", institution: "C", name: "C", currency: "COP", initialBalance: 0, createdAt: "2026-01-01T00:00:00Z", creditLimit: 5_000_000, last4: "1234", expDate: "01/30", network: "visa" },
+    ] as Account[]
+    const deferred = purchase(1_000_000, "2026-03-05T12:00:00Z", 12, 2)
+    const single: Transaction = { ...purchase(300_000, "2026-03-06T12:00:00Z", 1), installments: undefined }
+    const totals = portfolioTotals(accounts, [deferred, single], new Date("2026-03-20T12:00:00Z"))
+    expect(totals.debt).toBe(1_300_000)
+    expect(totals.netWorth).toBe(700_000)
+    expect(totals.nextPayment).toBeCloseTo(300_000 + 94_559.6, 0)
+    expect(totals.liquidNetWorth).toBeCloseTo(2_000_000 - totals.nextPayment, 6)
   })
 
   it("only allows installments on expenses", () => {

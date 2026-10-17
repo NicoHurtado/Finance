@@ -5,7 +5,7 @@ import { useAccountsStore } from "@/lib/store/accounts";
 import { useTransactionsStore } from "@/lib/store/transactions";
 import { useSettingsStore } from "@/lib/store/settings";
 import { useExchangeRateStore } from "@/lib/store/exchange-rate";
-import { netWorth, monthlyChangePct, liquidNetWorth, investmentsTotal } from "@/lib/finance/net-worth";
+import { monthlyChangePct, portfolioTotals } from "@/lib/finance/net-worth";
 import { formatMoney, formatPct } from "@/lib/finance/format";
 
 export function NetWorth({
@@ -20,13 +20,16 @@ export function NetWorth({
   const txs = useTransactionsStore((s) => s.transactions);
   const currency = useSettingsStore((s) => s.defaultCurrency);
   const usdToCop = useExchangeRateStore((s) => s.usdToCop);
-  const { total, pct, liquid, inv } = useMemo(() => {
+  const { total, pct, liquid, inv, debt, nextPayment } = useMemo(() => {
     const now = new Date();
+    const totals = portfolioTotals(accounts, txs, now, usdToCop);
     return {
-      total: netWorth(accounts, txs, now, usdToCop),
+      total: totals.netWorth,
       pct: monthlyChangePct(accounts, txs, now, usdToCop),
-      liquid: liquidNetWorth(accounts, txs, now, usdToCop),
-      inv: investmentsTotal(accounts, txs, now, usdToCop),
+      liquid: totals.liquidNetWorth,
+      inv: totals.investments,
+      debt: totals.debt,
+      nextPayment: totals.nextPayment,
     };
   }, [accounts, txs, usdToCop]);
   const up = pct >= 0;
@@ -54,6 +57,11 @@ export function NetWorth({
             {liquid < 0 ? "-" : ""}
             {formatMoney(liquid, currency)}
           </div>
+          {nextPayment > 0 && (
+            <div className="text-[10px] text-muted-foreground tabular-nums mt-0.5">
+              Ya resta {formatMoney(nextPayment, currency)} del pago de tarjetas
+            </div>
+          )}
         </div>
         <div>
           <div className="text-[12px] tracking-[-0.005em] text-muted-foreground">
@@ -68,6 +76,16 @@ export function NetWorth({
             )}
           </div>
         </div>
+        {debt > 0 && (
+          <div>
+            <div className="text-[12px] tracking-[-0.005em] text-muted-foreground">
+              Deuda general
+            </div>
+            <div className="text-sm font-semibold tabular-nums mt-0.5 text-destructive">
+              -{formatMoney(debt, currency)}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

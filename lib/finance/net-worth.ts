@@ -1,6 +1,7 @@
 import type { Account, Transaction } from "@/lib/types"
 import { accountBalance } from "./credit"
 import { fixedIncomeBalance } from "./fixed-income"
+import { creditPaymentSummary } from "./installments"
 
 export function computeAccountBalance(
   account: Account,
@@ -60,8 +61,14 @@ export function netWorth(
 
 export interface PortfolioTotals {
   netWorth: number
+  /** Activos líquidos menos el próximo pago de las tarjetas (no la deuda total). */
   liquidNetWorth: number
   investments: { cop: number; usd: number }
+  /** Deuda general: todo lo que se debe en tarjetas, incluidas las cuotas futuras. */
+  debt: number
+  /** Lo que sí o sí toca pagar en el próximo corte: compras a 1 cuota + la
+   *  cuota del mes (con intereses) de las compras diferidas. */
+  nextPayment: number
 }
 
 /** All headline totals from one grouped balance calculation. */
@@ -71,18 +78,34 @@ export function portfolioTotals(
   now: Date = new Date(),
   usdToCop?: number | null
 ): PortfolioTotals {
-  const balances = computeAccountBalances(accounts, txs, now)
+  const grouped = groupTransactionsByAccount(txs)
   let net = 0
   let liquid = 0
   let investmentCop = 0
   let investmentUsd = 0
+  let debt = 0
+  let nextPayment = 0
 
   for (const account of accounts) {
-    const balance = balances.get(account.id) ?? 0
+    const accountTxs = grouped.get(account.id) ?? []
+    const balance = computeAccountBalance(account, accountTxs, now)
     const balanceCop = toBaseCurrency(balance, account.currency, usdToCop)
     if (account.type === "credit") {
       net -= balanceCop
-      liquid -= balanceCop
+      if (balance <= 0) {
+        // Saldo a favor en la tarjeta: es plata disponible.
+        liquid -= balanceCop
+        continue
+      }
+      debt += balanceCop
+      // La liquidez solo descuenta el pago del mes, no las cuotas futuras.
+      const payment = toBaseCurrency(
+        creditPaymentSummary(accountTxs, balance, now).monthlyPayment,
+        account.currency,
+        usdToCop
+      )
+      nextPayment += payment
+      liquid -= payment
     } else {
       net += balanceCop
       if (account.type === "investment") {
@@ -98,10 +121,13 @@ export function portfolioTotals(
     netWorth: net,
     liquidNetWorth: liquid,
     investments: { cop: investmentCop, usd: investmentUsd },
+    debt,
+    nextPayment,
   }
 }
 
-/** Patrimonio sin las inversiones de bolsa (plata que sí se puede tocar). */
+/** Patrimonio sin las inversiones de bolsa (plata que sí se puede tocar),
+ *  descontando solo el próximo pago de las tarjetas. */
 export function liquidNetWorth(
   accounts: Account[],
   txs: Transaction[],

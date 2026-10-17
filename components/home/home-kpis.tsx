@@ -2,7 +2,7 @@
 import { useMemo } from "react"
 import {
   Wallet,
-  TrendingUp,
+  CreditCard,
   ArrowDownRight,
   ArrowUpRight,
   LineChart,
@@ -23,20 +23,18 @@ export function HomeKpis() {
   const currency = useSettingsStore((s) => s.defaultCurrency)
   const usdToCop = useExchangeRateStore((s) => s.usdToCop)
 
-  const { nw, liquid, inv, pct, expensesMonth, incomeMonth, monthCount } =
+  const { nw, liquid, inv, debt, nextPayment, pct, expensesMonth, incomeMonth } =
     useMemo(() => {
       const now = new Date()
       const monthStart = startOfMonth(now)
       const past = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
       let expense = 0
       let income = 0
-      let count = 0
       const pastTransactions = [] as typeof txs
       for (const t of txs) {
         const occurredAt = new Date(t.occurredAt)
         if (occurredAt <= past) pastTransactions.push(t)
         if (occurredAt < monthStart) continue
-        count++
         if (t.kind === "expense") expense += t.amount
         else if (t.kind === "income") income += t.amount
       }
@@ -51,13 +49,14 @@ export function HomeKpis() {
         nw: current.netWorth,
         liquid: current.liquidNetWorth,
         inv: current.investments,
+        debt: current.debt,
+        nextPayment: current.nextPayment,
         pct:
           previous === 0
             ? 0
             : ((current.netWorth - previous) / Math.abs(previous)) * 100,
         expensesMonth: expense,
         incomeMonth: income,
-        monthCount: count,
       }
     }, [accounts, txs, usdToCop])
 
@@ -66,7 +65,11 @@ export function HomeKpis() {
       <KpiCard
         label="Patrimonio líquido"
         value={`${liquid < 0 ? "-" : ""}${formatMoney(liquid, currency)}`}
-        delta="Sin inversiones de bolsa"
+        delta={
+          nextPayment > 0
+            ? `Descuenta ${formatMoney(nextPayment, currency)} de tarjetas`
+            : "Sin inversiones de bolsa"
+        }
         icon={Landmark}
         valueTone={liquid < 0 ? "down" : "neutral"}
       />
@@ -101,10 +104,11 @@ export function HomeKpis() {
         valueTone="down"
       />
       <KpiCard
-        label="Cuentas activas"
-        value={String(accounts.length)}
-        delta={`${monthCount} mov. este mes`}
-        icon={TrendingUp}
+        label="Deuda general"
+        value={`${debt > 0 ? "-" : ""}${formatMoney(debt, currency)}`}
+        delta={`Pago del mes ${formatMoney(nextPayment, currency)}`}
+        icon={CreditCard}
+        valueTone={debt > 0 ? "down" : "neutral"}
       />
     </div>
   )
