@@ -87,7 +87,7 @@ export default function CuentasPage() {
                 bar: "bg-positive",
               },
               {
-                label: "Deuda",
+                label: "Deuda general",
                 value: formatSignedMoney(-totalDebt, currency),
                 share: 100 - assetShare,
                 tone: "text-destructive",
