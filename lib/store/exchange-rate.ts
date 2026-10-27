@@ -11,8 +11,8 @@ function readCache(): Cached | null {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const parsed: Cached = JSON.parse(raw);
-    if (parsed.fetchedOn === today()) return parsed;
-    return null;
+    if (typeof parsed.rate !== "number" || !(parsed.rate > 0)) return null;
+    return parsed;
   } catch { return null; }
 }
 
@@ -29,28 +29,40 @@ interface State {
   hydrate: () => Promise<void>;
 }
 
-export const useExchangeRateStore = create<State>()((set) => ({
+let inFlight: Promise<void> | null = null;
+
+export const useExchangeRateStore = create<State>()((set, get) => ({
   usdToCop: null,
   trmDate: null,
   loaded: false,
-  hydrate: async () => {
+  hydrate: () => {
+    if (get().loaded) return Promise.resolve();
     // Use cached value if already fetched today
     const cached = readCache();
-    if (cached) {
+    if (cached?.fetchedOn === today()) {
       set({ usdToCop: cached.rate, trmDate: cached.date, loaded: true });
-      return;
+      return Promise.resolve();
     }
-    try {
-      const res = await fetch("/api/exchange-rate", { cache: "no-store" });
-      const data = await res.json();
-      if (data.rate) {
-        writeCache(data.rate, data.date ?? today());
-        set({ usdToCop: data.rate, trmDate: data.date ?? null, loaded: true });
-      } else {
-        set({ usdToCop: null, trmDate: null, loaded: true });
+    // A stale rate is far closer to reality than treating USD as COP, so show it
+    // while we try to refresh.
+    if (cached && get().usdToCop == null) {
+      set({ usdToCop: cached.rate, trmDate: cached.date });
+    }
+    inFlight ??= (async () => {
+      try {
+        const res = await fetch("/api/exchange-rate", { cache: "no-store" });
+        const data = await res.json();
+        if (res.ok && data.rate) {
+          writeCache(data.rate, data.date ?? today());
+          set({ usdToCop: data.rate, trmDate: data.date ?? null, loaded: true });
+        }
+        // On failure leave loaded=false so DataHydrator keeps retrying.
+      } catch {
+        /* retried by DataHydrator */
+      } finally {
+        inFlight = null;
       }
-    } catch {
-      set({ usdToCop: null, trmDate: null, loaded: true });
-    }
+    })();
+    return inFlight;
   },
 }));
