@@ -11,9 +11,14 @@ const TYPE_ORDER: Record<string, number> = {
   investment: 3,
 }
 
-function sortAccounts(accounts: Account[]): Account[] {
+/** Type group first, then the order the user chose, then creation date. */
+export function sortAccounts(accounts: Account[]): Account[] {
   return [...accounts].sort(
-    (a, b) => (TYPE_ORDER[a.type] ?? 99) - (TYPE_ORDER[b.type] ?? 99)
+    (a, b) =>
+      (TYPE_ORDER[a.type] ?? 99) - (TYPE_ORDER[b.type] ?? 99) ||
+      (a.sortOrder ?? Number.MAX_SAFE_INTEGER) -
+        (b.sortOrder ?? Number.MAX_SAFE_INTEGER) ||
+      (a.createdAt ?? "").localeCompare(b.createdAt ?? "")
   )
 }
 
@@ -34,6 +39,8 @@ interface State {
   add: (data: Omit<Account, "id" | "createdAt">) => Promise<Account>
   update: (id: string, patch: Partial<Account>) => Promise<void>
   setHomeVisibility: (id: string, visible: boolean) => Promise<void>
+  /** Saves the order of the given accounts (each id gets its index). */
+  reorder: (ids: string[]) => Promise<void>
   remove: (id: string) => Promise<void>
   getById: (id: string) => Account | undefined
 }
@@ -174,6 +181,29 @@ export const useAccountsStore = create<State>()((set, get) => ({
       )
       return { accounts, activeAccounts: deriveActive(accounts) }
     })
+  },
+  reorder: async (ids) => {
+    const previous = get().accounts
+    const position = new Map(ids.map((id, index) => [id, index]))
+    const accounts = sortAccounts(
+      previous.map((account) =>
+        position.has(account.id)
+          ? { ...account, sortOrder: position.get(account.id) }
+          : account
+      )
+    )
+    set({ accounts, activeAccounts: deriveActive(accounts) })
+    try {
+      const res = await fetch("/api/accounts/order", {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ ids }),
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    } catch (error) {
+      set({ accounts: previous, activeAccounts: deriveActive(previous) })
+      throw error
+    }
   },
   remove: async (id) => {
     const removed = get().accounts.find((account) => account.id === id)

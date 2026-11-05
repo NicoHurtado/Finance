@@ -24,6 +24,8 @@ export interface BaseAccount {
   active?: boolean;
   /** Defaults to visible. Only affects the account's presentation on Home. */
   showOnHome?: boolean;
+  /** Position chosen by the user within its type group (0 = first). */
+  sortOrder?: number;
 }
 
 export interface DebitAccount extends BaseAccount {

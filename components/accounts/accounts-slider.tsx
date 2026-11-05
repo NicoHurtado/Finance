@@ -21,7 +21,7 @@ export function AccountsSlider() {
     return (
       <div className="rounded-2xl border border-dashed p-6 text-center text-sm text-muted-foreground">
         {all.length > 0
-          ? "No hay tarjetas visibles. Usa Elegir tarjetas para mostrarlas aquí."
+          ? "No hay tarjetas visibles. Usa Organizar para mostrarlas aquí."
           : "Crea tu primera cuenta para empezar."}
       </div>
     );
