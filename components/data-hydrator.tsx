@@ -56,8 +56,8 @@ export function DataHydrator() {
     hydrateSubscriptions,
   ]);
 
-  // Movements can arrive while the app is closed (Apple Pay via Shortcuts), and
-  // accounts can be created from another device. Pull both whenever the PWA
+  // Movements and accounts can be created from another device (or by the
+  // subscriptions cron) while the app is closed. Pull both whenever the PWA
   // comes back to the foreground, so a new card shows up on Home right away.
   useEffect(() => {
     let lastPull = Date.now();

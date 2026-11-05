@@ -41,7 +41,7 @@ interface State {
   seed: (transactions: Transaction[]) => void
   hydrate: () => Promise<void>
   refresh: () => Promise<void>
-  /** Merges movements created elsewhere (e.g. Apple Pay). Returns how many arrived. */
+  /** Merges movements created elsewhere (e.g. another device or the subscriptions cron). Returns how many arrived. */
   pullNew: () => Promise<number>
   add: (data: Omit<Transaction, "id">) => Promise<Transaction | null>
   addMany: (data: Omit<Transaction, "id">[]) => Promise<Transaction[]>
