@@ -75,12 +75,18 @@ export function resolveCardArtFrom({
   // Type matters: the yellow debit is Mastercard, even on older accounts
   // created with the form's Visa default. Never infer an Amex as Visa Platinum.
   const bank = /bancolombia|banco colombia/.test(identity);
+  const amexGold =
+    bank && type === "credit" && (network === "amex" || /amex|american express/.test(identity)) && /gold|oro/.test(identity);
   const automaticId = bank && type === "debit" ? "bancolombia-debito"
+    : amexGold ? "bancolombia-amex-gold"
     : bank && type === "credit" && (network === "visa" || /visa/.test(identity)) && !/infinite|oro|clasica|signature/.test(identity)
       ? "bancolombia-visa-platinum"
       : undefined;
+  // A Bancolombia Amex Gold shows the bank's official art even if the generic
+  // American Express Gold design was picked when the card was created.
+  const chosenId = amexGold && presetId === "amex-gold" ? undefined : presetId;
   const preset =
-    getCardPreset(presetId) ??
+    getCardPreset(chosenId) ??
     getCardPreset(automaticId) ??
     matchCardPreset(institution || name, network) ??
     getCardPreset(GENERIC_BY_NETWORK[network ?? "other"]);
