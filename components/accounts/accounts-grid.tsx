@@ -19,7 +19,7 @@ export function AccountsGrid({ homeOnly = false }: { homeOnly?: boolean }) {
     return (
       <div className="rounded-2xl border border-dashed p-8 text-center text-sm text-muted-foreground">
         {all.length > 0
-          ? "No hay tarjetas visibles. Usa Elegir tarjetas para mostrarlas aquí."
+          ? "No hay tarjetas visibles. Usa Organizar para mostrarlas aquí."
           : "Aún no tienes cuentas."}
       </div>
     );

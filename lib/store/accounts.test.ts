@@ -80,3 +80,45 @@ describe("Home account visibility", () => {
     expect(useAccountsStore.getState().activeAccounts).toEqual([account])
   })
 })
+
+describe("Account order", () => {
+  const card = (id: string, extra: Partial<Account> = {}) =>
+    ({ ...account, id, type: "credit", createdAt: `2026-01-0${id.length}`, ...extra }) as Account
+
+  it("sorts by type, then the chosen order, then creation date", () => {
+    useAccountsStore.setState({ loaded: false })
+    useAccountsStore.getState().seed([
+      account,
+      card("c1"),
+      card("c22", { sortOrder: 0 }),
+      card("c333"),
+    ])
+    expect(useAccountsStore.getState().accounts.map((a) => a.id)).toEqual([
+      "c22",
+      "c1",
+      "c333",
+      "debit-1",
+    ])
+  })
+
+  it("saves the new order and keeps it", async () => {
+    useAccountsStore.setState({ loaded: false })
+    useAccountsStore.getState().seed([card("a"), card("bb")])
+    const fetchMock = vi.fn().mockResolvedValue(Response.json({ ok: true }))
+    vi.stubGlobal("fetch", fetchMock)
+    await useAccountsStore.getState().reorder(["bb", "a"])
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/accounts/order",
+      expect.objectContaining({ method: "PUT", body: JSON.stringify({ ids: ["bb", "a"] }) })
+    )
+    expect(useAccountsStore.getState().accounts.map((a) => a.id)).toEqual(["bb", "a"])
+  })
+
+  it("restores the previous order when saving fails", async () => {
+    useAccountsStore.setState({ loaded: false })
+    useAccountsStore.getState().seed([card("a"), card("bb")])
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(null, { status: 500 })))
+    await expect(useAccountsStore.getState().reorder(["bb", "a"])).rejects.toThrow()
+    expect(useAccountsStore.getState().accounts.map((a) => a.id)).toEqual(["a", "bb"])
+  })
+})
