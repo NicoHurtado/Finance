@@ -22,6 +22,11 @@ The UI is in Spanish and amounts are handled in Colombian pesos (COP).
   runway, spending heatmap, recurring subscriptions, category comparisons and
   expense breakdowns.
 - **History** — Browse, filter and edit past transactions.
+- **Bank SMS auto-capture** — An iOS Shortcuts "Message" automation forwards
+  every Bancolombia SMS to `POST /api/integrations/bank-sms` (personal Bearer
+  token, created in *Cuentas → Mensajes*). Purchases, transfers, QR payments and
+  incoming money are parsed and matched to an account by the last 4 digits;
+  anything unreadable stays in a review list.
 - **PWA** — Installable on mobile and desktop, with offline-friendly UX and a
   home-screen shortcut for quick transaction entry.
 - **Secure auth** — Email/password accounts with JWT stored in an httpOnly cookie.
