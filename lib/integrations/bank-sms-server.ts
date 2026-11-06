@@ -176,23 +176,9 @@ export async function ingestSms(uid: string, text: string): Promise<IngestResult
 
   const destination =
     sms.kind === "transfer" ? resolveAccountByLast4(sms.counterpartLast4, accounts, accountMap) : null;
-  // Money leaving a savings product (Fiducuenta, CDT, inversión) goes to another
-  // account, it isn't spent: without knowing which one, recording an expense
-  // would be wrong, so ask the user to map the destination first.
-  const savingsSource = account.type === "fixed_income" || account.type === "investment";
-  if (sms.kind === "transfer" && savingsSource && !destination) {
-    const ref = sms.counterpartLast4 ? `*${sms.counterpartLast4}` : "sin número";
-    if (sms.counterpartLast4) {
-      await db
-        .collection("users")
-        .updateOne({ id: uid }, { $addToSet: { "bankSms.seenProducts": sms.counterpartLast4 } });
-    }
-    await addPending(uid, text, `No sé a qué cuenta llegó el dinero (${ref})`, sms.counterpartLast4);
-    return {
-      status: "pending",
-      message: `No sé a qué cuenta llegó ${ref}. Asígnala en Cuentas → Mensajes del banco.`,
-    };
-  }
+  // Money leaving a savings product (Fiducuenta, CDT, inversión) to one of the
+  // user's accounts becomes a transfer below; to an account they don't have
+  // registered (e.g. paying someone), it is recorded as money that left it.
   if (destination && destination.id !== account.id && destination.currency === account.currency) {
     const pairId = `pair-${uuid()}`;
     transactions = [
