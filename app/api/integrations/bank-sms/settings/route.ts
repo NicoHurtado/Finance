@@ -37,6 +37,8 @@ export async function POST() {
 const patchSchema = z.object({
   /** "*1234" in the SMS → accountId; null removes the mapping. */
   product: z.object({ last4: z.string().regex(/^\d{4}$/), accountId: z.string().min(1).nullable() }).optional(),
+  /** Number typed by the user before any SMS mentioned it: keep it listed. */
+  addProduct: z.string().regex(/^\d{4}$/).optional(),
   /** Pending SMS to process again (after mapping its account) or to discard. */
   retryPendingId: z.string().min(1).optional(),
   dismissPendingId: z.string().min(1).optional(),
@@ -69,6 +71,10 @@ export async function PATCH(req: Request) {
     } else {
       await db.collection("users").updateOne({ id: uid }, { $unset: { [`bankSms.accountMap.${last4}`]: "" } });
     }
+  }
+
+  if (body.addProduct) {
+    await db.collection("users").updateOne({ id: uid }, { $addToSet: { "bankSms.seenProducts": body.addProduct } });
   }
 
   if (body.dismissPendingId) await removePending(uid, body.dismissPendingId);

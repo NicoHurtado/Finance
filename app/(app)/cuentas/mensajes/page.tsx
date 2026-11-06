@@ -255,8 +255,8 @@ export default function BankMessagesPage() {
               e.preventDefault();
               const last4 = newLast4.trim();
               if (!/^\d{4}$/.test(last4)) return;
-              setConfig((c) => (c && !c.seenProducts.includes(last4) ? { ...c, seenProducts: [...c.seenProducts, last4] } : c));
               setNewLast4("");
+              void call("PATCH", { addProduct: last4 });
             }}
           >
             <Input
