@@ -82,7 +82,11 @@ export function smsFingerprint(text: string): string {
 const COLOMBIA_OFFSET_HOURS = 5
 
 function parseDate(text: string): string | null {
-  const m = text.match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})(?:\s*,?\s*a\s+las\s+(\d{1,2}):(\d{2}))?/i)
+  // "2026/11/06 07:31:05" (year first) or "30/10/2026 a las 18:58" / "02/11/26 a las 07:51".
+  const iso = text.match(/\b(\d{4})[/-](\d{1,2})[/-](\d{1,2})(?:\s+(\d{1,2}):(\d{2}))?/)
+  const m = iso
+    ? [iso[0], iso[3], iso[2], iso[1], iso[4], iso[5]]
+    : text.match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})(?:\s*,?\s*a\s+las\s+(\d{1,2}):(\d{2}))?/i)
   if (!m) return null
   const day = Number(m[1])
   const month = Number(m[2])
@@ -145,6 +149,17 @@ export function parseBankSms(raw: string, now: Date = new Date()): ParsedSms | n
   if (/\bcompraste\b/.test(lower)) {
     const merchant = clean(text.match(new RegExp(`compraste\\s+${MONEY}\\s+en\\s+(.+?)\\s+con\\s+tu\\b`, "i"))?.[1])
     return { ...base, kind: "expense", description: merchant ? title(merchant) : "Compra", merchant }
+  }
+
+  // Retiraste $X de tu cuenta *1456 Fiducuenta el …, hacia la cuenta *10332495421
+  if (/\bretiraste\b/.test(lower) && /\bhacia\s+la\s+cuenta\b/.test(lower)) {
+    const product = clean(text.match(/\*\s?\d{4,}\s+(.+?)\s+el\s+\d/i)?.[1])
+    return {
+      ...base,
+      kind: "transfer",
+      counterpartLast4,
+      description: product ? `Retiro de ${title(product)}` : "Retiro",
+    }
   }
 
   // Retiraste $X en CAJERO … de tu T.Deb *1234

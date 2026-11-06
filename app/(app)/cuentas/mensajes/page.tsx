@@ -50,6 +50,8 @@ function CopyField({ label, value }: { label: string; value: string }) {
 export default function BankMessagesPage() {
   const accounts = useAccountsStore((s) => s.activeAccounts);
   const cards = accounts.filter((a) => a.type === "debit" || a.type === "credit");
+  // Fiducuenta, CDT and investments also show up in bank SMS (deposits, withdrawals).
+  const savings = accounts.filter((a) => a.type === "fixed_income" || a.type === "investment");
   const [config, setConfig] = useState<Config | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -209,7 +211,9 @@ export default function BankMessagesPage() {
           <SectionHeading>3 · ¿A qué cuenta va cada producto?</SectionHeading>
           <p className="text-sm text-muted-foreground">
             Los mensajes dicen los últimos 4 dígitos (*8761, *0560…). Si una tarjeta o cuenta tiene esos dígitos guardados,
-            se asigna sola. Si no, elígela aquí. Los números aparecen después del primer mensaje, o agrégalos tú.
+            se asigna sola. Si no, elígela aquí, incluidas Fiducuenta, CDT e inversiones. Si el número es de una cuenta
+            tuya que recibe dinero (por ejemplo, la cuenta a la que retiras de la Fiducuenta), asígnalo también para que
+            quede como traslado. Los números aparecen después del primer mensaje, o agrégalos tú.
           </p>
 
           {products.length > 0 && (
@@ -231,7 +235,7 @@ export default function BankMessagesPage() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value={AUTO}>{auto ? `Automático (${auto})` : "Sin asignar"}</SelectItem>
-                          {cards.map((a) => (
+                          {[...cards, ...savings].map((a) => (
                             <SelectItem key={a.id} value={a.id}>
                               {a.name}
                             </SelectItem>
