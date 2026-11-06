@@ -105,6 +105,31 @@ describe("parseBankSms", () => {
     })
   })
 
+  it("reads a withdrawal from a Fiducuenta into another account", () => {
+    const sms = parseBankSms(
+      "Bancolombia: Retiraste $600,000.00 de tu cuenta *1456 Fiducuenta el 2026/11/06 07:31:05, hacia la cuenta *10332495421. ¿Dudas? 6045109009",
+      NOW,
+    )
+    expect(sms).toMatchObject({
+      kind: "transfer",
+      amount: 600000,
+      accountLast4: "1456",
+      counterpartLast4: "5421",
+      description: "Retiro de Fiducuenta",
+      hasDate: true,
+      occurredAt: "2026-11-06T12:31:00.000Z",
+    })
+  })
+
+  it("reads an Amazon purchase", () => {
+    const sms = parseBankSms(
+      "Bancolombia: Compraste COP65.955,00 en AMAZON COM con tu T.Cred *8761, el 05/11/2026 a las 23:02. Si tienes dudas, encuentranos aqui: 6045109095 o 018000931987. Estamos cerca.",
+      NOW,
+    )
+    expect(sms).toMatchObject({ kind: "expense", amount: 65955, accountLast4: "8761", occurredAt: "2026-11-06T04:02:00.000Z" })
+    expect(guessCategory(sms?.merchant)).toBe("Shopping")
+  })
+
   it("reads incoming money", () => {
     const sms = parseBankSms(
       "Bancolombia: Recibiste una transferencia por $150,000.00 de JUAN PEREZ en tu cuenta *0560, el 03/11/2026 a las 09:00.",
@@ -135,6 +160,11 @@ describe("resolveAccountByLast4", () => {
 
   it("matches by last 4 digits", () => {
     expect(resolveAccountByLast4("8761", [credit, savings], {})?.id).toBe("tc")
+  })
+
+  it("maps savings products (fixed income) explicitly", () => {
+    const fidu = { ...base, id: "fidu", type: "fixed_income", name: "Fiducuenta", annualRate: 8, startDate: "2026-01-01" } as Account
+    expect(resolveAccountByLast4("1456", [credit, savings, fidu], { "1456": "fidu" })?.id).toBe("fidu")
   })
 
   it("uses the explicit mapping when the account has no last 4", () => {
