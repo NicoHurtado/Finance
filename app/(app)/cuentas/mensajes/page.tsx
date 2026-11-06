@@ -101,6 +101,10 @@ export default function BankMessagesPage() {
   };
   const mapProduct = (last4: string, value: string) =>
     call("PATCH", { product: { last4, accountId: value === AUTO ? null : value } });
+  const removeProduct = async (last4: string) => {
+    if (!confirm(`¿Quitar *${last4} de la lista? Volverá a aparecer si llega un mensaje con ese número.`)) return;
+    await call("PATCH", { removeProduct: last4 });
+  };
   const retry = async (id: string) => {
     const data = await call("PATCH", { retryPendingId: id });
     if (!data) return;
@@ -224,7 +228,7 @@ export default function BankMessagesPage() {
                   <div key={last4} className="flex items-center gap-3 px-3 py-2.5">
                     <CreditCard className="size-4 shrink-0 text-muted-foreground" />
                     <span className="min-w-0 flex-1 truncate text-sm tabular-nums">*{last4}</span>
-                    <div className="w-44 shrink-0">
+                    <div className="w-44 shrink-0 max-sm:w-36">
                       <Select
                         value={config?.accountMap[last4] ?? AUTO}
                         onValueChange={(v) => mapProduct(last4, v)}
@@ -243,6 +247,16 @@ export default function BankMessagesPage() {
                         </SelectContent>
                       </Select>
                     </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="shrink-0"
+                      onClick={() => removeProduct(last4)}
+                      disabled={busy}
+                      aria-label={`Quitar *${last4}`}
+                    >
+                      <X className="size-4" />
+                    </Button>
                   </div>
                 );
               })}
