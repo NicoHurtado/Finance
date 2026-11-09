@@ -14,11 +14,6 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: "black-translucent",
     title: "Coffee",
-    startupImage: "/stat_icon.svg",
-  },
-  icons: {
-    icon: "/stat_icon.svg",
-    apple: "/stat_icon.svg",
   },
 };
 
