@@ -20,6 +20,17 @@ describe("resolveCardArtFrom · Bancolombia Amex Gold", () => {
     expect(art?.imageUrl).toBe("/cards/app/bancolombia-visa-platinum.webp")
   })
 
+  it("uses the official art for a Bancolombia Mastercard Platinum", () => {
+    const art = resolveCardArtFrom({ institution: "Bancolombia", name: "Mastercard Platino", type: "credit", network: "mastercard" })
+    expect(art?.imageUrl).toBe("/cards/app/bancolombia-mastercard-platinum.webp")
+    expect(art?.network).toBe("mastercard")
+  })
+
+  it("keeps the generic yellow design for other Bancolombia Mastercard credit cards", () => {
+    const art = resolveCardArtFrom({ institution: "Bancolombia", name: "Mastercard Clásica", type: "credit", network: "mastercard" })
+    expect(art?.imageUrl).toBeUndefined()
+  })
+
   it("does not apply to a non-Bancolombia Amex Gold", () => {
     const art = resolveCardArtFrom({ institution: "American Express", name: "Gold", type: "credit", network: "amex" })
     expect(art?.imageUrl).toBeUndefined()

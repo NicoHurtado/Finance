@@ -42,6 +42,12 @@ export const CARD_PRESETS: CardPreset[] = [
     gradient: "#b6b6b6", border: "#a3a3a3", textTone: "dark", brandColor: "#111111",
   },
   {
+    id: "bancolombia-mastercard-platinum", label: "Mastercard Platinum", issuer: "Bancolombia",
+    institutionHint: "Bancolombia", network: "mastercard",
+    imageUrl: "/cards/app/bancolombia-mastercard-platinum.webp",
+    gradient: "#a3a4a6", border: "#8e8f91", textTone: "dark", brandColor: "#111111",
+  },
+  {
     id: "bancolombia-amex-gold", label: "American Express Gold", issuer: "Bancolombia",
     institutionHint: "Bancolombia", network: "amex",
     imageUrl: "/cards/app/bancolombia-amex-gold.webp",

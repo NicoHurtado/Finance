@@ -77,8 +77,12 @@ export function resolveCardArtFrom({
   const bank = /bancolombia|banco colombia/.test(identity);
   const amexGold =
     bank && type === "credit" && (network === "amex" || /amex|american express/.test(identity)) && /gold|oro/.test(identity);
+  const mastercardPlatinum =
+    bank && type === "credit" && network !== "visa" && network !== "amex" &&
+    (network === "mastercard" || /master/.test(identity)) && /platinum|platino/.test(identity);
   const automaticId = bank && type === "debit" ? "bancolombia-debito"
     : amexGold ? "bancolombia-amex-gold"
+    : mastercardPlatinum ? "bancolombia-mastercard-platinum"
     : bank && type === "credit" && (network === "visa" || /visa/.test(identity)) && !/infinite|oro|clasica|signature/.test(identity)
       ? "bancolombia-visa-platinum"
       : undefined;
