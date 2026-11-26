@@ -7,7 +7,7 @@ import { formatMoney } from "@/lib/finance/format";
 import { parseTransaction } from "@/lib/finance/transaction-validation";
 import { transferDirectionFor } from "@/lib/finance/transactions";
 import type { Account, Transaction } from "@/lib/types";
-import { guessCategory, parseBankSms, resolveAccountByLast4, smsFingerprint } from "./bank-sms";
+import { findSavingsAccount, guessCategory, parseBankSms, resolveAccountByLast4, smsFingerprint } from "./bank-sms";
 
 /** An SMS the app could not turn into a movement, kept for the user to review. */
 export interface PendingSms {
@@ -156,9 +156,11 @@ export async function ingestSms(uid: string, text: string): Promise<IngestResult
     .find({ userId: uid }, { projection: { _id: 0, userId: 0, syncToken: 0 } })
     .toArray();
   const accountMap = config.accountMap ?? {};
-  const account = resolveAccountByLast4(sms.accountLast4, accounts, accountMap);
+  const account =
+    resolveAccountByLast4(sms.accountLast4, accounts, accountMap) ??
+    (sms.savingsAccount ? findSavingsAccount(accounts) : null);
   if (!account) {
-    const ref = sms.accountLast4 ? `*${sms.accountLast4}` : "sin número";
+    const ref = sms.accountLast4 ? `*${sms.accountLast4}` : sms.savingsAccount ? "de ahorros (Bancomía)" : "sin número";
     await addPending(uid, text, `No sé a qué cuenta va el producto ${ref}`, sms.accountLast4);
     return {
       status: "pending",

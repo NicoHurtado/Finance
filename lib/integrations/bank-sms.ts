@@ -20,6 +20,11 @@ export interface ParsedSms {
   currency: "COP" | "USD"
   /** Last 4 digits of the user's product the money moved from (or into, for income). */
   accountLast4: string | null
+  /**
+   * True when the SMS names "tu cuenta (de) ahorros" without a number. The
+   * only savings account the app tracks is Bancomía, so it goes there.
+   */
+  savingsAccount?: boolean
   /** Last 4 digits of a destination account/card, when the SMS names one. */
   counterpartLast4?: string
   description: string
@@ -143,7 +148,16 @@ export function parseBankSms(raw: string, now: Date = new Date()): ParsedSms | n
   // Any other "*1234" is where the money went ("a la cuenta *10332495421").
   const counterpartLast4 = refs.find((r) => r !== accountLast4)
 
-  const base = { amount, currency, accountLast4, occurredAt, hasDate: parsedDate !== null } as const
+  const savingsAccount = !accountLast4 && /\btu\s+cuenta\s+(?:de\s+)?ahorros?\b/.test(lower)
+
+  const base = {
+    amount,
+    currency,
+    accountLast4,
+    occurredAt,
+    hasDate: parsedDate !== null,
+    ...(savingsAccount ? { savingsAccount } : {}),
+  } as const
 
   // Compraste $X en MERCHANT con tu T.Cred *1234
   if (/\bcompraste\b/.test(lower)) {
@@ -260,6 +274,17 @@ export function guessCategory(merchant: string | undefined, available?: string[]
     if (hit) return category
   }
   return fallback
+}
+
+/**
+ * The account for SMS that only say "cuenta AHORROS": the user's active
+ * Bancomía account (matched by name or institution).
+ */
+export function findSavingsAccount(accounts: Account[]): Account | null {
+  const matches = accounts.filter(
+    (a) => a.active !== false && /bancomia/.test(normalizeKey(`${a.name} ${a.institution}`)),
+  )
+  return matches.find((a) => a.type === "debit") ?? matches[0] ?? null
 }
 
 /**

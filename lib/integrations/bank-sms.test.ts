@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import type { Account } from "@/lib/types"
-import { guessCategory, parseAmount, parseBankSms, resolveAccountByLast4, smsFingerprint } from "./bank-sms"
+import { findSavingsAccount, guessCategory, parseAmount, parseBankSms, resolveAccountByLast4, smsFingerprint } from "./bank-sms"
 
 const NOW = new Date("2026-11-05T15:00:00Z")
 
@@ -150,6 +150,32 @@ describe("parseBankSms", () => {
 
   it("fingerprints the same SMS identically despite spacing", () => {
     expect(smsFingerprint("Compraste  $1 en X\n")).toBe(smsFingerprint("compraste $1 en x"))
+  })
+})
+
+describe("cuenta AHORROS", () => {
+  const sms =
+    "Bancolombia: Recibiste un pago por $4,582,936.00 de Page Interim Co a tu cuenta AHORROS, el 15:25 a las 26/11/2026. ¿Tienes dudas? Encuentranos aqui:018000931987. Estamos cerca"
+  const base = { institution: "Bancolombia", currency: "COP", initialBalance: 0, createdAt: "2026-01-01T00:00:00Z" } as const
+
+  it("flags savings-account income without a number", () => {
+    const parsed = parseBankSms(sms, NOW)
+    expect(parsed).toMatchObject({ kind: "income", amount: 4582936, accountLast4: null, savingsAccount: true })
+    expect(parsed?.description).toBe("Recibido de Page Interim Co")
+  })
+
+  it("does not flag messages with a product number", () => {
+    const parsed = parseBankSms("Bancolombia: Recibiste $10.000 de X en tu cuenta de ahorros *0560", NOW)
+    expect(parsed?.accountLast4).toBe("0560")
+    expect(parsed?.savingsAccount).toBeUndefined()
+  })
+
+  it("resolves to the Bancomía account", () => {
+    const other = { ...base, id: "ah", type: "debit", name: "Ahorros" } as Account
+    const bancomia = { ...base, id: "bm", type: "debit", name: "Bancomía", institution: "Bancamía" } as Account
+    expect(findSavingsAccount([other, bancomia])?.id).toBe("bm")
+    expect(findSavingsAccount([other])).toBeNull()
+    expect(findSavingsAccount([{ ...bancomia, active: false } as Account])).toBeNull()
   })
 })
 
