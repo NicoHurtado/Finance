@@ -16,6 +16,7 @@ import {
 import { PageHeader, SectionHeading } from "@/components/nav/page-header";
 import { useAccountsStore } from "@/lib/store/accounts";
 import { useTransactionsStore } from "@/lib/store/transactions";
+import { SAVINGS_KEY, findSavingsAccount } from "@/lib/integrations/bank-sms";
 import type { PublicBankSmsConfig } from "@/lib/integrations/bank-sms-server";
 
 const AUTO = "__auto__";
@@ -119,6 +120,7 @@ export default function BankMessagesPage() {
   const endpoint = `${origin}/api/integrations/bank-sms`;
   const accountName = (id: string | undefined) => accounts.find((a) => a.id === id)?.name;
   const autoMatch = (last4: string) => {
+    if (last4 === SAVINGS_KEY) return findSavingsAccount(accounts)?.name ?? null;
     const matches = cards.filter((a) => "last4" in a && a.last4 === last4);
     return matches.length === 1 ? matches[0].name : null;
   };
@@ -227,7 +229,9 @@ export default function BankMessagesPage() {
                 return (
                   <div key={last4} className="flex items-center gap-3 px-3 py-2.5">
                     <CreditCard className="size-4 shrink-0 text-muted-foreground" />
-                    <span className="min-w-0 flex-1 truncate text-sm tabular-nums">*{last4}</span>
+                    <span className="min-w-0 flex-1 truncate text-sm tabular-nums">
+                      {last4 === SAVINGS_KEY ? "Cuenta AHORROS" : `*${last4}`}
+                    </span>
                     <div className="w-44 shrink-0 max-sm:w-36">
                       <Select
                         value={config?.accountMap[last4] ?? AUTO}
@@ -253,7 +257,7 @@ export default function BankMessagesPage() {
                       className="shrink-0"
                       onClick={() => removeProduct(last4)}
                       disabled={busy}
-                      aria-label={`Quitar *${last4}`}
+                      aria-label={`Quitar ${last4 === SAVINGS_KEY ? "Cuenta AHORROS" : `*${last4}`}`}
                     >
                       <X className="size-4" />
                     </Button>

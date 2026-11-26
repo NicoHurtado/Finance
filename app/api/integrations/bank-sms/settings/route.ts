@@ -36,11 +36,11 @@ export async function POST() {
 
 const patchSchema = z.object({
   /** "*1234" in the SMS → accountId; null removes the mapping. */
-  product: z.object({ last4: z.string().regex(/^\d{4}$/), accountId: z.string().min(1).nullable() }).optional(),
+  product: z.object({ last4: z.string().regex(/^(?:\d{4}|AHORROS)$/), accountId: z.string().min(1).nullable() }).optional(),
   /** Removes a number from the list (and its mapping). */
-  removeProduct: z.string().regex(/^\d{4}$/).optional(),
+  removeProduct: z.string().regex(/^(?:\d{4}|AHORROS)$/).optional(),
   /** Number typed by the user before any SMS mentioned it: keep it listed. */
-  addProduct: z.string().regex(/^\d{4}$/).optional(),
+  addProduct: z.string().regex(/^(?:\d{4}|AHORROS)$/).optional(),
   /** Pending SMS to process again (after mapping its account) or to discard. */
   retryPendingId: z.string().min(1).optional(),
   dismissPendingId: z.string().min(1).optional(),

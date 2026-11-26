@@ -21,8 +21,8 @@ export interface ParsedSms {
   /** Last 4 digits of the user's product the money moved from (or into, for income). */
   accountLast4: string | null
   /**
-   * True when the SMS names "tu cuenta (de) ahorros" without a number. The
-   * only savings account the app tracks is Bancomía, so it goes there.
+   * True when the SMS names "tu cuenta (de) ahorros" without a number. It goes
+   * to the user's Bancolombia savings account (see findSavingsAccount).
    */
   savingsAccount?: boolean
   /** Last 4 digits of a destination account/card, when the SMS names one. */
@@ -276,15 +276,24 @@ export function guessCategory(merchant: string | undefined, available?: string[]
   return fallback
 }
 
+/** Key used in the product mapping for SMS that only say "cuenta AHORROS". */
+export const SAVINGS_KEY = "AHORROS"
+
 /**
- * The account for SMS that only say "cuenta AHORROS": the user's active
- * Bancomía account (matched by name or institution).
+ * The account for SMS that only say "cuenta AHORROS": the account mapped to
+ * SAVINGS_KEY in the app, otherwise the user's active Bancolombia debit
+ * account (preferring one called "ahorros" when there are several).
  */
-export function findSavingsAccount(accounts: Account[]): Account | null {
-  const matches = accounts.filter(
-    (a) => a.active !== false && /bancomia/.test(normalizeKey(`${a.name} ${a.institution}`)),
+export function findSavingsAccount(accounts: Account[], accountMap: Record<string, string> = {}): Account | null {
+  const active = accounts.filter((a) => a.active !== false)
+  const mapped = active.find((a) => a.id === accountMap[SAVINGS_KEY])
+  if (mapped) return mapped
+  const bancolombia = active.filter(
+    (a) => a.type === "debit" && normalizeKey(`${a.name} ${a.institution}`).includes("bancolombia"),
   )
-  return matches.find((a) => a.type === "debit") ?? matches[0] ?? null
+  if (bancolombia.length === 1) return bancolombia[0]
+  const named = bancolombia.filter((a) => normalizeKey(a.name).includes("ahorro"))
+  return named.length === 1 ? named[0] : null
 }
 
 /**

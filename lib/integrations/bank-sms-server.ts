@@ -7,7 +7,7 @@ import { formatMoney } from "@/lib/finance/format";
 import { parseTransaction } from "@/lib/finance/transaction-validation";
 import { transferDirectionFor } from "@/lib/finance/transactions";
 import type { Account, Transaction } from "@/lib/types";
-import { findSavingsAccount, guessCategory, parseBankSms, resolveAccountByLast4, smsFingerprint } from "./bank-sms";
+import { SAVINGS_KEY, findSavingsAccount, guessCategory, parseBankSms, resolveAccountByLast4, smsFingerprint } from "./bank-sms";
 
 /** An SMS the app could not turn into a movement, kept for the user to review. */
 export interface PendingSms {
@@ -132,7 +132,9 @@ export async function ingestSms(uid: string, text: string): Promise<IngestResult
     { id: uid },
     {
       $set: { "bankSms.lastEventAt": now.toISOString() },
-      ...(sms?.accountLast4 ? { $addToSet: { "bankSms.seenProducts": sms.accountLast4 } } : {}),
+      ...(sms?.accountLast4 || sms?.savingsAccount
+        ? { $addToSet: { "bankSms.seenProducts": sms.accountLast4 ?? SAVINGS_KEY } }
+        : {}),
     },
   );
 
@@ -158,10 +160,11 @@ export async function ingestSms(uid: string, text: string): Promise<IngestResult
   const accountMap = config.accountMap ?? {};
   const account =
     resolveAccountByLast4(sms.accountLast4, accounts, accountMap) ??
-    (sms.savingsAccount ? findSavingsAccount(accounts) : null);
+    (sms.savingsAccount ? findSavingsAccount(accounts, accountMap) : null);
   if (!account) {
-    const ref = sms.accountLast4 ? `*${sms.accountLast4}` : sms.savingsAccount ? "de ahorros (Bancomía)" : "sin número";
-    await addPending(uid, text, `No sé a qué cuenta va el producto ${ref}`, sms.accountLast4);
+    const ref = sms.accountLast4 ? `*${sms.accountLast4}` : sms.savingsAccount ? "AHORROS" : "sin número";
+    const key = sms.accountLast4 ?? (sms.savingsAccount ? SAVINGS_KEY : null);
+    await addPending(uid, text, `No sé a qué cuenta va el producto ${ref}`, key);
     return {
       status: "pending",
       message: `No sé a qué cuenta va ${ref}. Asígnala en Cuentas → Mensajes del banco.`,

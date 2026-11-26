@@ -170,12 +170,20 @@ describe("cuenta AHORROS", () => {
     expect(parsed?.savingsAccount).toBeUndefined()
   })
 
-  it("resolves to the Bancomía account", () => {
-    const other = { ...base, id: "ah", type: "debit", name: "Ahorros" } as Account
-    const bancomia = { ...base, id: "bm", type: "debit", name: "Bancomía", institution: "Bancamía" } as Account
-    expect(findSavingsAccount([other, bancomia])?.id).toBe("bm")
-    expect(findSavingsAccount([other])).toBeNull()
-    expect(findSavingsAccount([{ ...bancomia, active: false } as Account])).toBeNull()
+  it("resolves to the Bancolombia savings account", () => {
+    const credit = { ...base, id: "tc", type: "credit", name: "TC", last4: "8761", creditLimit: 1, expDate: "", network: "visa" } as Account
+    const ahorros = { ...base, id: "ah", type: "debit", name: "Ahorros" } as Account
+    const nu = { ...base, id: "nu", type: "debit", name: "Nu", institution: "Nu" } as Account
+    expect(findSavingsAccount([credit, ahorros, nu])?.id).toBe("ah")
+    expect(findSavingsAccount([nu])).toBeNull()
+    expect(findSavingsAccount([{ ...ahorros, active: false } as Account])).toBeNull()
+  })
+
+  it("prefers the explicit AHORROS mapping and disambiguates by name", () => {
+    const ahorros = { ...base, id: "ah", type: "debit", name: "Ahorros" } as Account
+    const nomina = { ...base, id: "no", type: "debit", name: "Nómina" } as Account
+    expect(findSavingsAccount([ahorros, nomina])?.id).toBe("ah")
+    expect(findSavingsAccount([ahorros, nomina], { AHORROS: "no" })?.id).toBe("no")
   })
 })
 
